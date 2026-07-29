@@ -3,16 +3,19 @@ from database import Base
 from sqlalchemy.orm import relationship
 
 class Item(Base):
-    __tablename__="Products"
+    __tablename__="products"
 
     id=Column(Integer, primary_key=True, index=True)
     name=Column(String)
     price=Column(Integer)
-    owner_id = Column(Integer, ForeignKey("Users.id"))
-    owner = relationship("User", back_populates="products")
+    owner_id = Column(Integer, ForeignKey("users.id"))
+    owner = relationship(
+        "User", 
+        back_populates="products"
+        )
 
 class User(Base):
-    __tablename__ = "Users"
+    __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True)

@@ -27,6 +27,7 @@ The application follows a clean backend structure with separated models, schemas
 * Secure password hashing using bcrypt
 * Protected API routes
 
+
 ## 🗄️ Database
 
 * SQLite database integration
