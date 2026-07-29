@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from schema import LoginRequest, UserCreate
 from database import get_db
@@ -21,16 +21,10 @@ def login(
         User.username == form_data.username
     ).first()
 
-    if user is None:
+    if user is None or not verify_password(form_data.password, user.password):
         raise HTTPException(
-            status_code=404,
-            detail="User not found"
-        )
-
-    if not verify_password(form_data.password, user.password):
-        raise HTTPException(
-            status_code=401,
-            detail="Wrong password"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password"
         )
 
     access_token = create_access_token(
@@ -47,7 +41,7 @@ def login(
     }
 
 
-@router.post("/register")
+@router.post("/register", status_code=status.HTTP_201_CREATED)
 def register(
     user: UserCreate,
     db: Session = Depends(get_db)
@@ -60,7 +54,7 @@ def register(
 
     if existing_user:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered."
         )
 

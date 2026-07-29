@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from dependencies import get_current_admin
 from database import get_db
@@ -23,7 +23,11 @@ def get_users(
     return users
 
 #Users dodavanje korisnika
-@router.post("/")
+@router.post(
+    "/", 
+    response_model=UserResponse,
+    status_code=status.HTTP_201_CREATED
+)
 def create_user(
     user: UserCreate,
     db: Session = Depends(get_db),
@@ -41,7 +45,7 @@ def create_user(
 
     return new_user
 
-@router.delete("/{user_id}")
+@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(
     user_id: int,
     db: Session = Depends(get_db),
@@ -50,12 +54,15 @@ def delete_user(
     user = db.query(User).filter(User.id == user_id).first()
 
     if user is None:
-        return {"message": "User not found"}
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
 
     db.delete(user)
     db.commit()
 
-    return {"message": "User deleted"}
+    return
 
 @router.put("/{user_id}/role")
 def change_role(
@@ -71,13 +78,13 @@ def change_role(
 
     if user is None:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
 
     if role not in ["user", "admin"]:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid role"
         )
 
@@ -105,7 +112,7 @@ def make_first_admin(
 
     if existing_admin:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Admin already exists"
         )
 
@@ -115,7 +122,7 @@ def make_first_admin(
 
     if user is None:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
 
@@ -146,7 +153,7 @@ def reset_password(
 
     if user is None:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
 

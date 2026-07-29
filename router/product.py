@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -13,7 +13,7 @@ router = APIRouter(
 )
 
 # CREATE - dodavanje novog itema
-@router.post("/")
+@router.post("/", status_code=status.HTTP_201_CREATED)
 def create_item(
     item: ItemCreate,
     db: Session = Depends(get_db),
@@ -38,12 +38,14 @@ def get_items(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    if current_user.role == "admin":
-        return db.query(Item).all()
+    query = db.query(Item)
 
-    return db.query(Item).filter(
-        Item.owner_id == current_user.id
-    ).all()
+    if current_user.role != "admin":
+        query = query.filter(
+            Item.owner_id == current_user.id
+        )
+
+    return query.all()
 
 
 @router.get("/{item_id}")
@@ -56,20 +58,20 @@ def get_item(
 
     if item is None:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Product not found"
         )
 
     if current_user.role != "admin" and item.owner_id != current_user.id:
         raise HTTPException(
-            status_code=403,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="You cannot access this product"
         )
 
     return item
 
 
-@router.delete("/{item_id}")
+@router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_item(
     item_id: int,
     db: Session = Depends(get_db),
@@ -79,20 +81,20 @@ def delete_item(
 
     if item is None:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Product not found"
         )
         
     if current_user.role != "admin" and item.owner_id != current_user.id:
         raise HTTPException(
-            status_code=403,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="You cannot delete this product"
         )
 
     db.delete(item)
     db.commit()
 
-    return {"message": "Item deleted"}
+    return
 
 
 @router.put("/{item_id}")
@@ -106,14 +108,14 @@ def update_item(
 
     if db_item is None:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Product not found"
         )
         
-    if current_user.role != "admin" and item.owner_id != current_user.id:
+    if current_user.role != "admin" and db_item.owner_id != current_user.id:
         raise HTTPException(
-            status_code=403,
-            detail="You cannot delete this product"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You cannot update this product"
         )
 
     db_item.name = item.name
