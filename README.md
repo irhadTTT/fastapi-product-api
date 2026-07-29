@@ -1,14 +1,59 @@
 # FastAPI Product API 🚀
 
-A RESTful backend API built with **Python and FastAPI** for managing products and user authentication.
-
-This project demonstrates backend development concepts including CRUD operations, database integration, API design, data validation, and secure authentication.
-
-The application follows a clean backend structure with separated models, schemas, routes, and database logic.
+REST API built with FastAPI, PostgreSQL, SQLAlchemy, Alembic and Docker.
 
 ---
 
 # 📌 Features
+
+- User authentication with JWT
+- Role based authorization
+- Product CRUD operations
+- PostgreSQL database
+- Database migrations with Alembic
+- Dockerized development environment
+- Swagger API documentation
+
+## Tech Stack
+
+- Python
+- FastAPI
+- SQLAlchemy
+- PostgreSQL
+- Alembic
+- Docker
+- JWT
+
+## Installation
+
+### Clone repository
+
+git clone ...
+
+### Start services
+
+docker compose up --build
+
+## Environment Variables
+
+DATABASE_URL=
+SECRET_KEY=
+ALGORITHM=
+
+## Database migrations
+
+alembic upgrade head
+
+## API Documentation
+
+Open:
+
+http://localhost:8000/docs
+
+## Docker Services
+
+- FastAPI container
+- PostgreSQL container
 
 ## 📦 Product Management
 
@@ -276,18 +321,18 @@ Implemented security features:
 
 ---
 
-# 🚀 Future Improvements
+## 🚀 Future Improvements
 
 Possible improvements:
 
-* PostgreSQL database support
-* Alembic migrations
-* Docker support
-* Automated testing with Pytest
-* Role-based authorization
-* API rate limiting
-* Cloud deployment
-* CI/CD pipeline
+- Automated testing with Pytest
+- API rate limiting
+- Refresh token implementation
+- Product categories
+- Image upload for products
+- Pagination and filtering
+- Cloud deployment
+- CI/CD pipeline
 
 ---
 
@@ -301,5 +346,4 @@ https://github.com/irhadTTT
 ---
 
 # 📄 License
-
-This project is created for educational and portfolio purposes.
+This project is licensed under the MIT License.
