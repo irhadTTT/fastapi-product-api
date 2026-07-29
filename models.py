@@ -15,11 +15,12 @@ class User(Base):
     __tablename__ = "Users"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String)
-    email = Column(String)
+    username = Column(String, unique=True)
+    email = Column(String, unique=True, index=True)
     password = Column(String)
     products = relationship(
         "Item",
         back_populates="owner",
         cascade="all, delete"
     )
+    role = Column(String, default="user")
