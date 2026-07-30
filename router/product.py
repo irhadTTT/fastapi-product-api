@@ -7,6 +7,7 @@ from schemas.product import ItemCreate, ItemUpdate
 from dependencies import get_current_user, get_current_admin
 from typing import Optional
 from enums.sort import SortField, SortOrder, UserRole
+import math
 
 
 router = APIRouter(
@@ -42,6 +43,8 @@ def get_items(
     max_price: Optional[float] = Query(None, gt=0),
     sort_by: SortField | None = None,
     order: SortOrder = SortOrder.asc,
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -79,7 +82,20 @@ def get_items(
         else:
             query = query.order_by(Item.created_at.asc())
 
-    return query.all()
+    skip = (page-1)*limit
+    total = query.count()
+
+    items = (query.offset(skip).limit(limit).all())
+
+    total_pages = math.ceil(total / limit)
+
+    return {
+        "products":items,
+        "page":page,
+        "limit":limit,
+        "total":total,
+        "total_pages": total_pages
+    }
 
 
 @router.get("/{item_id}")
