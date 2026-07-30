@@ -27,24 +27,3 @@ class ItemResponse(BaseModel):
     class Config:
         from_attributes = True
         #dozvoli mapiranje Entity-DTO
-
-class UserCreate(BaseModel):
-    username: str
-    email: str
-    password: str
-
-
-class UserResponse(BaseModel):
-    id: int
-    username: str
-    email: str
-    role: str
-    class Config:
-        from_attributes = True
-
-class LoginRequest(BaseModel):
-    email: str
-    password: str
-
-class PasswordReset(BaseModel):
-    new_password: str

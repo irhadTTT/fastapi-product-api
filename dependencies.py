@@ -4,7 +4,7 @@ from jose import jwt
 
 from database import get_db
 from sqlalchemy.orm import Session
-from models import User
+from models.user import User
 from dotenv import load_dotenv
 import os
 

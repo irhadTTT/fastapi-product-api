@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-from models import User, Item
+from models.user import User
+from models.product import Item
 from router import user, product, auth
 from database import Base, engine
 

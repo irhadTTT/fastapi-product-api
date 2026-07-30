@@ -3,8 +3,9 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 
-from models import Item, User
-from schema import ItemCreate, ItemUpdate
+from models.product import Item
+from models.user import User
+from schemas.product import ItemCreate, ItemUpdate
 from dependencies import get_current_user, get_current_admin
 
 router = APIRouter(

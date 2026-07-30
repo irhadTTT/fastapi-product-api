@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from dependencies import get_current_admin
 from database import get_db
-from models import User
-from schema import UserCreate, UserResponse, PasswordReset
+from models.user import User
+from schemas.user import UserCreate, UserResponse
+from schemas.auth import PasswordReset
 from security import hash_password
 
 
