@@ -167,25 +167,32 @@ The project follows a layered backend architecture:
 
 # 📂 Project Structure
 
-```text
 fastapi-product-api/
-
 │
-├── app/
-│   │
-│   ├── main.py              # Application entry point
-│   ├── database.py          # Database configuration
-│   ├── models.py            # SQLAlchemy models
-│   ├── schemas.py            # Pydantic schemas
-│   ├── auth.py               # Authentication logic
-│   │
-│   ├── routers/
-│   │   ├── products.py       # Product endpoints
-│   │   └── users.py          # User endpoints
-│   │
-│   └── dependencies.py       # API dependencies
+├── main.py
+├── database.py
+├── dependencies.py
+│
+├── models/
+│   ├── __init__.py
+│   ├── product.py
+│   └── user.py
+│
+├── schemas/
+│   ├── __init__.py
+│   ├── product.py
+│   ├── user.py
+│   └── auth.py
+│
+├── router/
+│   ├── __init__.py
+│   ├── product.py
+│   ├── user.py
+│   └── auth.py
 │
 ├── requirements.txt
+├── docker-compose.yml
+├── Dockerfile
 ├── .env
 ├── database.sqlite3
 └── README.md
