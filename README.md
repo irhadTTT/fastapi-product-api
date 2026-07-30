@@ -50,6 +50,13 @@ Open:
 
 http://localhost:8000/docs
 
+## Admin account (development)
+
+For testing admin endpoints, use the default admin account:
+
+Username: admin
+Password: admin123
+
 ## Docker Services
 
 - FastAPI container
