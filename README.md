@@ -166,7 +166,7 @@ The project follows a layered backend architecture:
 ---
 
 # 📂 Project Structure
-
+```text
 fastapi-product-api/
 │
 ├── main.py
