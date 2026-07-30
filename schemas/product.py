@@ -23,7 +23,20 @@ class ItemResponse(BaseModel):
     id: int
     name: str
     price: int
+    image_url: str | None = None
+    
 #AutoMapper entity-DTO kao i kod .net
     class Config:
         from_attributes = True
         #dozvoli mapiranje Entity-DTO
+
+
+class ProductsResponse(BaseModel):
+    products: list[ItemResponse]
+    page: int
+    limit: int
+    total: int
+    total_pages: int
+    
+    class Config:
+        from_attributes = True

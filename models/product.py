@@ -18,3 +18,4 @@ class Item(Base):
         DateTime,
         default = datetime.utcnow
     )
+    image_url = Column(String, nullable=True)

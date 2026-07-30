@@ -1,13 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
 from sqlalchemy.orm import Session
 from database import get_db
 from models.product import Item
 from models.user import User
-from schemas.product import ItemCreate, ItemUpdate
+from schemas.product import ItemCreate, ItemUpdate, ProductsResponse
 from dependencies import get_current_user, get_current_admin
 from typing import Optional
 from enums.sort import SortField, SortOrder, UserRole
 import math
+import os
+import shutil
 
 
 router = APIRouter(
@@ -36,7 +38,7 @@ def create_item(
 
 
 # READ - vraćanje svih itema
-@router.get("/")
+@router.get("/", response_model=ProductsResponse)
 def get_items(
     q: Optional[str] = Query(None),
     min_price: Optional[float] = Query(None, gt=0),
@@ -88,6 +90,13 @@ def get_items(
     items = (query.offset(skip).limit(limit).all())
 
     total_pages = math.ceil(total / limit)
+    print([
+        {
+            "name": item.name,
+            "image_url": item.image_url
+        }
+        for item in items
+    ])
 
     return {
         "products":items,
@@ -141,6 +150,12 @@ def delete_item(
             detail="You cannot delete this product"
         )
 
+    if item.image_url:
+        image_path = item.image_url.lstrip("/")
+
+    if os.path.exists(image_path):
+        os.remove(image_path)
+
     db.delete(item)
     db.commit()
 
@@ -175,3 +190,53 @@ def update_item(
     db.refresh(db_item)
 
     return db_item
+
+#upload image 
+@router.post("/{product_id}/image")
+def upload_product_image(
+    product_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    product = db.query(Item).filter(
+        Item.id == product_id
+    ).first()
+
+    if not product:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+
+    if product.owner_id != current_user.id and current_user.role != UserRole.admin:
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN,
+            detail="Not enough permissions"
+        )
+
+    allowed_types = [
+        "image/jpeg",
+        "image/png"
+    ]
+
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Only jpg and png images are allowed"
+        )
+
+    file_location = f"uploads/products/{file.filename}"
+
+    with open(file_location, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    product.image_url = file_location
+
+    db.commit()
+    db.refresh(product)
+
+    return {
+        "message": "Image uploaded successfully",
+        "image_url": product.image_url
+    }

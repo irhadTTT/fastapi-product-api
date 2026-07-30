@@ -3,6 +3,7 @@ from models.user import User
 from models.product import Item
 from router import user, product, auth
 from database import Base, engine
+from fastapi.staticfiles import StaticFiles
 
 
 Base.metadata.create_all(bind=engine)
@@ -16,3 +17,9 @@ app = FastAPI(
 app.include_router(user.router)
 app.include_router(product.router)
 app.include_router(auth.router)
+
+app.mount(
+    "/uploads",
+    StaticFiles(directory="uploads"),
+    name="uploads"
+)
