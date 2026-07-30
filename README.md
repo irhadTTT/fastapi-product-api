@@ -6,23 +6,35 @@ REST API built with FastAPI, PostgreSQL, SQLAlchemy, Alembic and Docker.
 
 # 📌 Features
 
-- User authentication with JWT
-- Role based authorization
-- Product CRUD operations
-- PostgreSQL database
-- Database migrations with Alembic
-- Dockerized development environment
-- Swagger API documentation
+* User authentication with JWT
+* Password hashing with bcrypt
+* Role-based authorization (Admin/User)
+* Protected user-owned routes
+* Product CRUD operations
+* Product image upload and management
+* Automatic image cleanup when deleting products
+* Product filtering and searching
+* Product sorting by multiple fields
+* Pagination support
+* PostgreSQL database integration
+* Database migrations with Alembic
+* SQLAlchemy ORM
+* Pydantic schema validation
+* Dockerized development environment
+* Swagger/OpenAPI API documentation
 
 ## Tech Stack
 
-- Python
-- FastAPI
-- SQLAlchemy
-- PostgreSQL
-- Alembic
-- Docker
-- JWT
+* Python
+* FastAPI
+* SQLAlchemy ORM
+* PostgreSQL
+* Alembic (Database migrations)
+* Pydantic (Data validation)
+* JWT Authentication
+* bcrypt (Password hashing)
+* Docker & Docker Compose
+* Swagger / OpenAPI Documentation
 
 ## Installation
 
@@ -33,12 +45,6 @@ git clone ...
 ### Start services
 
 docker compose up --build
-
-## Environment Variables
-
-DATABASE_URL=
-SECRET_KEY=
-ALGORITHM=
 
 ## Database migrations
 
@@ -51,11 +57,12 @@ Open:
 http://localhost:8000/docs
 
 ## Admin account (development)
-
+```text
 For testing admin endpoints, use the default admin account:
 
 Username: admin
 Password: admin123
+```
 
 ## Docker Services
 
