@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-
 from database import get_db
-
 from models.product import Item
 from models.user import User
 from schemas.product import ItemCreate, ItemUpdate
 from dependencies import get_current_user, get_current_admin
 from typing import Optional
+from enums.sort import SortField, SortOrder, UserRole
+
 
 router = APIRouter(
     prefix="/products",
@@ -40,12 +40,14 @@ def get_items(
     q: Optional[str] = Query(None),
     min_price: Optional[float] = Query(None, gt=0),
     max_price: Optional[float] = Query(None, gt=0),
+    sort_by: SortField | None = None,
+    order: SortOrder = SortOrder.asc,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     query = db.query(Item)
 
-    if current_user.role != "admin":
+    if current_user.role != UserRole.admin:
         query = query.filter(
             Item.owner_id == current_user.id
         )
@@ -60,6 +62,22 @@ def get_items(
     
     if max_price:
         query = query.filter(Item.price <= max_price)
+
+    if sort_by == SortField.price:
+        if order == SortOrder.desc:
+            query = query.order_by(Item.price.desc())
+        else:
+            query = query.order_by(Item.price.asc())
+    elif sort_by == SortField.name:
+        if order == SortOrder.desc:
+            query = query.order_by(Item.name.desc())
+        else:
+            query = query.order_by(Item.name.asc())
+    elif sort_by == SortField.created_at:
+        if order == SortOrder.desc:
+            query = query.order_by(Item.created_at.desc())
+        else:
+            query = query.order_by(Item.created_at.asc())
 
     return query.all()
 
@@ -78,7 +96,7 @@ def get_item(
             detail="Product not found"
         )
 
-    if current_user.role != "admin" and item.owner_id != current_user.id:
+    if current_user.role != UserRole.admin and item.owner_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You cannot access this product"
@@ -101,7 +119,7 @@ def delete_item(
             detail="Product not found"
         )
         
-    if current_user.role != "admin" and item.owner_id != current_user.id:
+    if current_user.role != UserRole.admin and item.owner_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You cannot delete this product"
@@ -128,7 +146,7 @@ def update_item(
             detail="Product not found"
         )
         
-    if current_user.role != "admin" and db_item.owner_id != current_user.id:
+    if current_user.role != UserRole.admin and db_item.owner_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You cannot update this product"

@@ -6,7 +6,7 @@ from models.user import User
 from schemas.user import UserCreate, UserResponse
 from schemas.auth import PasswordReset
 from security import hash_password
-
+from enums.sort import UserRole
 
 
 router = APIRouter(
@@ -83,7 +83,7 @@ def change_role(
             detail="User not found"
         )
 
-    if role not in ["user", "admin"]:
+    if role not in [UserRole.user, UserRole.admin]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid role"
@@ -108,7 +108,7 @@ def make_first_admin(
 ):
 
     existing_admin = db.query(User).filter(
-        User.role == "admin"
+        User.role == UserRole.admin
     ).first()
 
     if existing_admin:
@@ -127,7 +127,7 @@ def make_first_admin(
             detail="User not found"
         )
 
-    user.role = "admin"
+    user.role = UserRole.admin
 
     db.commit()
     db.refresh(user)

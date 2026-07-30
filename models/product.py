@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from database import Base
 from sqlalchemy.orm import relationship
+from datetime import datetime
 
 class Item(Base):
     __tablename__="products"
@@ -13,3 +14,7 @@ class Item(Base):
         "User", 
         back_populates="products"
         )
+    created_at = Column(
+        DateTime,
+        default = datetime.utcnow
+    )
