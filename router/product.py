@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -7,6 +7,7 @@ from models.product import Item
 from models.user import User
 from schemas.product import ItemCreate, ItemUpdate
 from dependencies import get_current_user, get_current_admin
+from typing import Optional
 
 router = APIRouter(
     prefix="/products",
@@ -36,6 +37,7 @@ def create_item(
 # READ - vraćanje svih itema
 @router.get("/")
 def get_items(
+    q: Optional[str] = Query(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -44,6 +46,11 @@ def get_items(
     if current_user.role != "admin":
         query = query.filter(
             Item.owner_id == current_user.id
+        )
+    
+    if q:
+        query = query.filter(
+            Item.name.ilike(f"%{q}%")
         )
 
     return query.all()
