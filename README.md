@@ -138,36 +138,53 @@ Password: admin123
 The project follows a layered backend architecture:
 
 ```text
-              Client
-                |
-                |
-                ▼
+                     Client
+                       |
+                       |
+                       ▼
 
-        ┌───────────────┐
-        │   FastAPI     │
-        │    Routes     │
-        └───────┬───────┘
-                |
-                ▼
+              ┌────────────────┐
+              │    FastAPI     │
+              │     Routes     │
+              │    (Router)    │
+              └────────┬───────┘
+                       |
+                       ▼
 
-        ┌───────────────┐
-        │   Schemas     │
-        │   Pydantic    │
-        └───────┬───────┘
-                |
-                ▼
+              ┌────────────────┐
+              │    Schemas     │
+              │    Pydantic    │
+              │ Request/Response│
+              └────────┬───────┘
+                       |
+                       ▼
 
-        ┌───────────────┐
-        │ SQLAlchemy    │
-        │    Models     │
-        └───────┬───────┘
-                |
-                ▼
+              ┌────────────────┐
+              │  SQLAlchemy    │
+              │     Models     │
+              │   ORM Layer    │
+              └────────┬───────┘
+                       |
+                       ▼
 
-        ┌───────────────┐
-        │    SQLite     │
-        │   Database    │
-        └───────────────┘
+              ┌────────────────┐
+              │    Alembic     │
+              │   Migrations   │
+              └────────┬───────┘
+                       |
+                       ▼
+
+              ┌────────────────┐
+              │   PostgreSQL   │
+              │    Database    │
+              └────────────────┘
+                       ▲
+                       |
+                       |
+              ┌────────────────┐
+              │    Docker      │
+              │ Docker Compose │
+              └────────────────┘
 ```
 
 ---
@@ -217,66 +234,16 @@ git clone https://github.com/irhadTTT/fastapi-product-api.git
 cd fastapi-product-api
 ```
 
----
-
-## Create Virtual Environment
-
-```bash
-python -m venv venv
-```
-
-Activate:
-
-### Windows
-
-```bash
-venv\Scripts\activate
-```
-
-### Linux / macOS
-
-```bash
-source venv/bin/activate
-```
-
----
-
-## Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
 # 🔑 Environment Variables
 
 Create a `.env` file:
 
 ```env
-DATABASE_URL=sqlite:///./database.sqlite3
-SECRET_KEY=your_secret_key
+DATABASE_URL=postgresql://username:password@postgres:5432/database_name
+SECRET_KEY=your_secret_key_here
 ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
 
----
-
-# ▶️ Run Application
-
-Start the development server:
-
-```bash
-uvicorn app.main:app --reload
-```
-
-Application runs at:
-
-```text
-http://127.0.0.1:8000
-```
-
----
 
 # 📖 API Documentation
 
