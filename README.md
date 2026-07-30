@@ -72,6 +72,13 @@ http://localhost:8000/docs
 * Secure password hashing using bcrypt
 * Protected API routes
 
+## Admin account (development)
+
+For testing admin endpoints, use the default admin account:
+
+Username: admin
+Password: admin123
+
 
 ## 🗄️ Database
 

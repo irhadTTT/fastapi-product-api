@@ -38,6 +38,8 @@ def create_item(
 @router.get("/")
 def get_items(
     q: Optional[str] = Query(None),
+    min_price: Optional[float] = Query(None, gt=0),
+    max_price: Optional[float] = Query(None, gt=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -52,6 +54,12 @@ def get_items(
         query = query.filter(
             Item.name.ilike(f"%{q}%")
         )
+
+    if min_price:
+        query = query.filter(Item.price >= min_price)
+    
+    if max_price:
+        query = query.filter(Item.price <= max_price)
 
     return query.all()
 
