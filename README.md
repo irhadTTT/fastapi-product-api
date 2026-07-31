@@ -100,6 +100,9 @@ For testing admin endpoints, use the default admin account:
 Username: admin
 Password: admin123
 
+<img width="1918" height="1002" alt="Screenshot 2026-07-31 212757" src="https://github.com/user-attachments/assets/de00cc0c-4690-4a14-be2e-7abea0b02eda" />
+
+
 
 ## 🗄️ Database
 
