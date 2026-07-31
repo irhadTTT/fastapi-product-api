@@ -26,7 +26,9 @@ Designed as a scalable backend foundation for future stock management features s
 * Pydantic schema validation
 * Dockerized development environment
 * Swagger/OpenAPI interactive documentation
-* Initial automated testing setup with Pytest
+* Add automated testing with Pytest for authentication and category features
+<img width="1895" height="1032" alt="Screenshot 2026-07-31 210242" src="https://github.com/user-attachments/assets/b09d6660-4d64-453c-9caf-6b5a92bce514" />
+
 
 ## Tech Stack
 
@@ -68,6 +70,8 @@ For testing admin endpoints, use the default admin account:
 Username: admin
 Password: admin123
 ```
+<img width="1918" height="1002" alt="Screenshot 2026-07-31 212757" src="https://github.com/user-attachments/assets/dc11b361-fa3e-4303-9dfc-ade43d34c58c" />
+
 
 ## Docker Services
 
@@ -90,14 +94,6 @@ Password: admin123
 * JWT-based authentication
 * Secure password hashing using bcrypt
 * Protected API routes
-
-## Admin account (development)
-
-For testing admin endpoints, use the default admin account:
-
-Username: admin
-Password: admin123
-
 
 ## 🗄️ Database
 
