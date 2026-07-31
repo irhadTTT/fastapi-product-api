@@ -1,6 +1,6 @@
 from models.category import Category
-from models.user import User
 from models.product import Item
+from models.user import User
 from security import hash_password
 
 
@@ -175,7 +175,7 @@ def test_delete_category_exists(client, db_session):
     token = login_response.json()["access_token"]
 
     response = client.delete(
-        f"/categories/1111111",
+        "/categories/1111111",
         headers={
             "Authorization": f"Bearer {token}"
         }

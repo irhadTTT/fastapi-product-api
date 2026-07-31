@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class SortField(str, Enum):
     price = "price"
     name = "name"

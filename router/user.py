@@ -1,13 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-from dependencies import get_current_admin
 from database import get_db
-from models.user import User
-from schemas.user import UserCreate, UserResponse
-from schemas.auth import PasswordReset
-from security import hash_password
+from dependencies import get_current_admin
 from enums.sort import UserRole
-
+from models.user import User
+from schemas.auth import PasswordReset
+from schemas.user import UserCreate, UserResponse
+from security import hash_password
+from core.exception import (
+    NotFoundException,
+    ForbiddenException,
+    BadRequestException,
+)
 
 router = APIRouter(
     prefix="/users",
@@ -34,6 +38,20 @@ def create_user(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
+    existing_user = db.query(User).filter(
+        User.username == user.username
+    ).first()
+
+    if existing_user:
+        raise BadRequestException("Username already exists")
+    
+    existing_email = db.query(User).filter(
+        User.email == user.email
+    ).first()
+
+    if existing_email:
+        raise BadRequestException("Email already exists")
+        
     new_user = User(
         username=user.username,
         email=user.email,
@@ -55,15 +73,11 @@ def delete_user(
     user = db.query(User).filter(User.id == user_id).first()
 
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+        raise NotFoundException("User not found")
 
     db.delete(user)
     db.commit()
 
-    return
 
 @router.put("/{user_id}/role")
 def change_role(
@@ -78,16 +92,10 @@ def change_role(
     ).first()
 
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+        raise NotFoundException("User not found")
 
     if role not in [UserRole.user, UserRole.admin]:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid role"
-        )
+        raise BadRequestException("Invalid role")
 
     user.role = role
 
@@ -112,20 +120,14 @@ def make_first_admin(
     ).first()
 
     if existing_admin:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Admin already exists"
-        )
+        raise BadRequestException("Admin already exists")
 
     user = db.query(User).filter(
         User.id == user_id
     ).first()
 
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+        raise NotFoundException("User not found")
 
     user.role = UserRole.admin
 
@@ -153,11 +155,7 @@ def reset_password(
 
 
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
-
+         raise NotFoundException("User not found")
 
     user.password = hash_password(
         data.new_password

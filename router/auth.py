@@ -1,20 +1,33 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-from schemas.user import UserCreate
-from schemas.auth import LoginRequest
-from database import get_db
-from models.user import User
-from security import verify_password, hash_password
-from jwt_handler import create_access_token
+from fastapi import APIRouter, Depends, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.orm import Session
+from database import get_db
+from jwt_handler import create_access_token
+from models.user import User
+from schemas.user import UserCreate, UserResponse
+from security import hash_password, verify_password
+from dependencies import get_current_user
+from limiter import limiter
+from slowapi.util import get_remote_address
+from core.exception import (
+    BadRequestException,
+    UnauthorizedException
+)
+
 
 router = APIRouter(
     prefix="/auth",
     tags=["Auth"]
 )
 
-@router.post("/login")
-def login(
+@router.post(
+    "/login",
+    summary="User login",
+    description="Authenticate user and return JWT access token"
+    )
+@limiter.limit("5/minute")
+async def login(
+    request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
@@ -23,10 +36,7 @@ def login(
     ).first()
 
     if user is None or not verify_password(form_data.password, user.password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password"
-        )
+        raise UnauthorizedException("Invalid username or password")
 
     access_token = create_access_token(
         data={
@@ -41,7 +51,12 @@ def login(
     }
 
 
-@router.post("/register", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register", 
+    status_code=status.HTTP_201_CREATED,
+    summary="Register user",
+    description="Register new user"
+    )
 def register(
     user: UserCreate,
     db: Session = Depends(get_db)
@@ -53,10 +68,7 @@ def register(
     )
 
     if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered."
-        )
+        raise BadRequestException("Email already registered.")
 
     new_user = User(
         username=user.username,
@@ -71,3 +83,7 @@ def register(
     return {
         "message": "User created successfully."
     }
+
+@router.get("/me", response_model=UserResponse)
+def get_me(current_user: User = Depends(get_current_user)):
+    return current_user

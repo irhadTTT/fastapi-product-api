@@ -1,19 +1,31 @@
 from fastapi import FastAPI
-from models.user import User
-from models.product import Item
-from router import user, product, auth, category
-from database import Base, engine
 from fastapi.staticfiles import StaticFiles
-
-
+from limiter import limiter
+from database import Base, engine
+from router import auth, category, product, user
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from core.exception import (
+    AppException,
+    app_exception_handler,
+)
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="My FastAPI Project",
-    version="1.0.0"
+    title="StockFlow API project"
 )
 
+app.add_exception_handler(
+    AppException,
+    app_exception_handler
+)
+
+app.state.limiter = limiter
+app.add_exception_handler(
+    RateLimitExceeded,
+    _rate_limit_exceeded_handler
+)
 
 app.include_router(user.router)
 app.include_router(product.router)

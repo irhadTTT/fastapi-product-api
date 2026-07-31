@@ -1,10 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 from database import get_db
-from models.category import Category
-from schemas.category import CategoryCreate, CategoryResponse
 from dependencies import get_current_admin
-
+from models.category import Category
+from models.user import User
+from schemas.category import CategoryCreate, CategoryResponse
+from core.exception import (
+    NotFoundException,
+    BadRequestException,
+)
 
 router = APIRouter(
     prefix="/categories",
@@ -23,10 +27,7 @@ def create_category(
     ).first()
 
     if existing_category:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Category already exists"
-        )
+        raise BadRequestException("Category already exists")
 
     new_category = Category(
         name=category.name
@@ -57,18 +58,11 @@ def delete_category(
     ).first()
 
     if not category:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Category not found"
-        )
-    
+        raise NotFoundException("Category not found")
+
     if category.products:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot delete category with products"
-        )
+        raise BadRequestException("Cannot delete category with products")
 
     db.delete(category)
     db.commit()
 
-    return

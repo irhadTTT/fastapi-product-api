@@ -1,3 +1,3 @@
 from .auth import LoginRequest, PasswordReset
-from .product import ItemCreate, ItemUpdate, ItemResponse
+from .product import ItemCreate, ItemResponse, ItemUpdate
 from .user import UserCreate, UserResponse

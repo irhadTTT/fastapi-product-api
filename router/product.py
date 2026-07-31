@@ -1,16 +1,19 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+import math
+import os
+import aiofiles
+from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 from sqlalchemy.orm import Session
 from database import get_db
+from dependencies import get_current_admin, get_current_user
+from enums.sort import SortField, SortOrder, UserRole
 from models.product import Item
 from models.user import User
 from schemas.product import ItemCreate, ItemUpdate, ProductsResponse
-from dependencies import get_current_user, get_current_admin
-from typing import Optional
-from enums.sort import SortField, SortOrder, UserRole
-import math
-import os
-import shutil
-
+from core.exception import (
+    NotFoundException,
+    ForbiddenException,
+    BadRequestException,
+)
 
 router = APIRouter(
     prefix="/products",
@@ -41,9 +44,9 @@ def create_item(
 # READ - vraćanje svih itema
 @router.get("/", response_model=ProductsResponse)
 def get_items(
-    q: Optional[str] = Query(None),
-    min_price: Optional[float] = Query(None, gt=0),
-    max_price: Optional[float] = Query(None, gt=0),
+    q: str | None = Query(None),
+    min_price: float | None = Query(None, gt=0),
+    max_price: float | None = Query(None, gt=0),
     sort_by: SortField | None = None,
     order: SortOrder = SortOrder.asc,
     page: int = Query(1, ge=1),
@@ -117,17 +120,11 @@ def get_item(
     item = db.query(Item).filter(Item.id ==  item_id).first()
 
     if item is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Product not found"
-        )
+         raise NotFoundException("Product not found")
 
     if current_user.role != UserRole.admin and item.owner_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access this product"
-        )
-
+        raise ForbiddenException("You cannot access this product")
+ 
     return item
 
 
@@ -140,27 +137,19 @@ def delete_item(
     item = db.query(Item).filter(Item.id == item_id).first()
 
     if item is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Product not found"
-        )
+        raise NotFoundException("Product not found")
         
     if current_user.role != UserRole.admin and item.owner_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot delete this product"
-        )
+        raise ForbiddenException("You cannot delete this product")
 
     if item.image_url:
         image_path = item.image_url.lstrip("/")
-
-    if os.path.exists(image_path):
-        os.remove(image_path)
+        if os.path.exists(image_path):
+            os.remove(image_path)
 
     db.delete(item)
     db.commit()
 
-    return
 
 
 @router.put("/{item_id}")
@@ -173,16 +162,10 @@ def update_item(
     db_item = db.query(Item).filter(Item.id == item_id).first()
 
     if db_item is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Product not found"
-        )
+        raise NotFoundException("Product not found")
         
     if current_user.role != UserRole.admin and db_item.owner_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot update this product"
-        )
+        raise ForbiddenException("You cannot update this product")
 
     db_item.name = item.name
     db_item.price = item.price
@@ -205,16 +188,10 @@ async def upload_product_image(
     ).first()
 
     if not product:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail="Product not found"
-        )
+        raise NotFoundException("Product not found")
 
     if product.owner_id != current_user.id and current_user.role != UserRole.admin:
-        raise HTTPException(
-            status_code=HTTP_403_FORBIDDEN,
-            detail="Not enough permissions"
-        )
+        raise ForbiddenException("Not enough permissions")
 
     allowed_types = [
         "image/jpeg",
@@ -222,25 +199,19 @@ async def upload_product_image(
     ]
 
     if file.content_type not in allowed_types:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail="Only jpg and png images are allowed"
-        )
+        raise BadRequestException("Only jpg and png images are allowed")
 
     MAX_FILE_SIZE = 5 * 1024 * 1204
 
     content = await file.read()
 
     if len(content) > MAX_FILE_SIZE:
-        raise HTTPException(
-            status_code = HTTP_400_BAD_REQUEST,
-             detail="Image size must not exceed 5 MB."
-        )
+        raise BadRequestException("Image size must not exceed 5 MB.")
 
     file_location = f"uploads/products/{file.filename}"
 
-    with open(file_location, "wb") as buffer:
-        buffer.write(content) 
+    async with aiofiles.open(file_location, "wb") as buffer:
+        await buffer.write(content)
 
     product.image_url = file_location
 
