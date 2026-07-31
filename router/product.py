@@ -27,7 +27,8 @@ def create_item(
     new_item = Item(
         name=item.name,
         price=item.price,
-        owner_id=current_user.id
+        owner_id=current_user.id,
+        category_id=item.category_id
     )
 
     db.add(new_item)
@@ -193,7 +194,7 @@ def update_item(
 
 #upload image 
 @router.post("/{product_id}/image")
-def upload_product_image(
+async def upload_product_image(
     product_id: int,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
@@ -226,10 +227,20 @@ def upload_product_image(
             detail="Only jpg and png images are allowed"
         )
 
+    MAX_FILE_SIZE = 5 * 1024 * 1204
+
+    content = await file.read()
+
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code = HTTP_400_BAD_REQUEST,
+             detail="Image size must not exceed 5 MB."
+        )
+
     file_location = f"uploads/products/{file.filename}"
 
     with open(file_location, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+        buffer.write(content) 
 
     product.image_url = file_location
 

@@ -14,6 +14,15 @@ class Item(Base):
         "User", 
         back_populates="products"
         )
+    category_id = Column(
+        Integer,
+        ForeignKey("categories.id")
+    )
+
+    category = relationship(
+        "Category",
+        back_populates="products"
+    )
     created_at = Column(
         DateTime,
         default = datetime.utcnow

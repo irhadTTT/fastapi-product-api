@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from schemas.category import CategoryResponse
 
 
 class ItemCreate(BaseModel):
@@ -9,6 +10,7 @@ class ItemCreate(BaseModel):
     price: float= Field(
         gt=0
     )
+    category_id: int | None = None
 
 class ItemUpdate(BaseModel):
     name: str = Field(
@@ -18,14 +20,15 @@ class ItemUpdate(BaseModel):
     price: float= Field(
         gt=0
     )
+    category_id: int | None = None
 
 class ItemResponse(BaseModel):
     id: int
     name: str
     price: int
     image_url: str | None = None
-    
-#AutoMapper entity-DTO kao i kod .net
+    category: CategoryResponse | None = None
+    #AutoMapper entity-DTO kao i kod .net
     class Config:
         from_attributes = True
         #dozvoli mapiranje Entity-DTO
