@@ -1,27 +1,32 @@
-# FastAPI Product API 🚀
+# StockFlow API 🚀
 
-REST API built with FastAPI, PostgreSQL, SQLAlchemy, Alembic and Docker.
+A modern inventory management REST API built with FastAPI, PostgreSQL, SQLAlchemy, Alembic and Docker.
+Designed as a scalable backend foundation for future stock management features such as inventory tracking, suppliers, orders and reporting.
 
 ---
 
-# 📌 Features
+## Features 🚀
 
-* User authentication with JWT
-* Password hashing with bcrypt
+* JWT-based user authentication
+* Secure password hashing with bcrypt
 * Role-based authorization (Admin/User)
-* Protected user-owned routes
+* Protected user-specific resources
+* Admin management capabilities
+* Category management
 * Product CRUD operations
 * Product image upload and management
+* Image validation and upload size limits
 * Automatic image cleanup when deleting products
-* Product filtering and searching
-* Product sorting by multiple fields
+* Product filtering and advanced searching
+* Multi-field product sorting
 * Pagination support
 * PostgreSQL database integration
 * Database migrations with Alembic
-* SQLAlchemy ORM
+* SQLAlchemy ORM for database operations
 * Pydantic schema validation
 * Dockerized development environment
-* Swagger/OpenAPI API documentation
+* Swagger/OpenAPI interactive documentation
+* Initial automated testing setup with Pytest
 
 ## Tech Stack
 
