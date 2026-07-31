@@ -4,7 +4,7 @@ from schemas.user import UserCreate
 from schemas.auth import LoginRequest
 from database import get_db
 from models.user import User
-from security import verify_password
+from security import verify_password, hash_password
 from jwt_handler import create_access_token
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -34,7 +34,6 @@ def login(
             "role": user.role
         }
     )
-
 
     return {
         "access_token": access_token,
