@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, Request
+from fastapi import APIRouter, Depends, status, Request, BackgroundTasks
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from database import get_db
@@ -13,6 +13,9 @@ from core.exception import (
     BadRequestException,
     UnauthorizedException
 )
+from repositories import user_repository
+from core.email import send_verification_email
+from core.security import create_email_token
 
 
 router = APIRouter(
@@ -31,9 +34,7 @@ async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
-    user = db.query(User).filter(
-        User.username == form_data.username
-    ).first()
+    user = user_repository.get_by_username(db, form_data.username)
 
     if user is None or not verify_password(form_data.password, user.password):
         raise UnauthorizedException("Invalid username or password")
@@ -52,23 +53,25 @@ async def login(
 
 
 @router.post(
-    "/register", 
-    status_code=status.HTTP_201_CREATED,
-    summary="Register user",
-    description="Register new user"
+        "/register", 
+        status_code=status.HTTP_201_CREATED,
+        summary="Register user",
+        description="Register new user",
     )
 def register(
     user: UserCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
-    existing_user = (
-        db.query(User)
-        .filter(User.email == user.email)
-        .first()
-    )
+    existing_user = user_repository.get_by_email(db, user.email)
 
     if existing_user:
         raise BadRequestException("Email already registered.")
+
+    existing_username = user_repository.get_by_username(db, user.username)
+
+    if existing_username:
+        raise BadRequestException("Username already exists.")
 
     new_user = User(
         username=user.username,
@@ -76,9 +79,17 @@ def register(
         password=hash_password(user.password)
     )
 
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+    user_repository.create(db, new_user)
+
+    token = create_email_token(
+        new_user.email
+    )
+
+    background_tasks.add_task(
+        send_verification_email,
+        new_user.email,
+        token
+    )
 
     return {
         "message": "User created successfully."

@@ -12,23 +12,20 @@ from core.exception import (
     ForbiddenException,
     BadRequestException,
 )
-from repositories.user_repository import UserRepository
+from repositories import user_repository
 
 router = APIRouter(
     prefix="/users",
     tags=["Users"]
 )
 
-user_repository = UserRepository()
 
 @router.get("/", response_model=list[UserResponse])
 def get_users(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
-    users = user_repository.get_all(db)
-
-    return users
+    return user_repository.get_all(db)
 
 #Users dodavanje korisnika
 @router.post(

@@ -1,0 +1,73 @@
+from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
+from pydantic_settings import BaseSettings
+from core.config import settings
+
+
+conf = ConnectionConfig(
+    MAIL_USERNAME=settings.MAIL_USERNAME,
+    MAIL_PASSWORD=settings.MAIL_PASSWORD,
+    MAIL_FROM=settings.MAIL_FROM,
+    MAIL_FROM_NAME = settings.MAIL_FROM_NAME,
+    MAIL_SERVER=settings.MAIL_SERVER,
+    MAIL_PORT=settings.MAIL_PORT,
+    MAIL_STARTTLS=True,
+    MAIL_SSL_TLS=False,
+    USE_CREDENTIALS=True,
+)
+
+
+async def send_verification_email(
+    email: str,
+    token: str
+):
+
+    link = (
+        f"{settings.FRONTEND_URL}/auth/verify-email"
+        f"?token={token}"
+    )
+
+    message = MessageSchema(
+        subject="Verify your StockFlow account",
+        recipients=[email],
+        body=f"""
+        <html>
+            <body>
+                <h2>Welcome to StockFlow</h2>
+
+                <p>
+                    Thanks for creating your account.
+                    Please verify your email address.
+                </p>
+
+                <p>
+                    Click the button below to verify your email address:
+                </p>
+
+                <p>
+                    <a href="{link}"
+                    style="background:#2563eb;color:#fff;padding:12px 20px;
+                            text-decoration:none;border-radius:6px;display:inline-block;">
+                        Verify Email
+                    </a>
+                </p>
+
+                <p>
+                    If you did not create this account,
+                    you can ignore this email.
+                </p>
+
+                <br>
+
+                <p>
+                    Kind regards,<br>
+                    StockFlow Team
+                </p>
+            </body>
+        </html>
+        """,
+        subtype="html"
+    )
+
+    fm = FastMail(conf)
+
+    await fm.send_message(message)

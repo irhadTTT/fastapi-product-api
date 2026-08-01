@@ -12,8 +12,9 @@ from schemas.product import ItemCreate, ItemUpdate, ProductsResponse
 from core.exception import (
     NotFoundException,
     ForbiddenException,
-    BadRequestException,
+    BadRequestException
 )
+from repositories import product_repository
 
 router = APIRouter(
     prefix="/products",
@@ -34,14 +35,9 @@ def create_item(
         category_id=item.category_id
     )
 
-    db.add(new_item)
-    db.commit()
-    db.refresh(new_item)
-
-    return new_item
+    return product_repository.create(db, new_item)
 
 
-# READ - vraćanje svih itema
 @router.get("/", response_model=ProductsResponse)
 def get_items(
     q: str | None = Query(None),
@@ -117,7 +113,7 @@ def get_item(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)):
 
-    item = db.query(Item).filter(Item.id ==  item_id).first()
+    item = product_repository.get_by_id(db, item_id)
 
     if item is None:
          raise NotFoundException("Product not found")
@@ -134,7 +130,7 @@ def delete_item(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
-    item = db.query(Item).filter(Item.id == item_id).first()
+    item = product_repository.get_by_id(db, item_id)
 
     if item is None:
         raise NotFoundException("Product not found")
@@ -147,9 +143,7 @@ def delete_item(
         if os.path.exists(image_path):
             os.remove(image_path)
 
-    db.delete(item)
-    db.commit()
-
+    product_repository.delete(db, item)
 
 
 @router.put("/{item_id}")
@@ -159,7 +153,7 @@ def update_item(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
-    db_item = db.query(Item).filter(Item.id == item_id).first()
+    db_item = product_repository.get_by_id(db, item_id)
 
     if db_item is None:
         raise NotFoundException("Product not found")
@@ -170,10 +164,7 @@ def update_item(
     db_item.name = item.name
     db_item.price = item.price
 
-    db.commit()
-    db.refresh(db_item)
-
-    return db_item
+    return product_repository.save(db, db_item)
 
 #upload image 
 @router.post("/{product_id}/image")
@@ -183,9 +174,7 @@ async def upload_product_image(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    product = db.query(Item).filter(
-        Item.id == product_id
-    ).first()
+    product = product_repository.get_by_id(db, product_id)
 
     if not product:
         raise NotFoundException("Product not found")

@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
-
 from database import Base
+from sqlalchemy import Boolean
 
 
 class User(Base):
@@ -17,3 +17,7 @@ class User(Base):
         cascade="all, delete"
     )
     role = Column(String, default="user")
+    is_verified = Column(
+        Boolean,
+        default=False
+    )

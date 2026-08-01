@@ -9,6 +9,7 @@ from core.exception import (
     NotFoundException,
     BadRequestException,
 )
+from repositories import category_repository
 
 router = APIRouter(
     prefix="/categories",
@@ -22,9 +23,7 @@ def create_category(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
-    existing_category = db.query(Category).filter(
-        Category.name == category.name
-    ).first()
+    existing_category = category_repository.get_by_name(db, category.name)
 
     if existing_category:
         raise BadRequestException("Category already exists")
@@ -32,19 +31,14 @@ def create_category(
     new_category = Category(
         name=category.name
     )
-
-    db.add(new_category)
-    db.commit()
-    db.refresh(new_category)
-
-    return new_category
+    return category_repository.create(db, new_category)
 
 
 @router.get("/", response_model=list[CategoryResponse])
 def get_categories(
     db: Session = Depends(get_db)
 ):
-    return db.query(Category).all()
+    return category_repository.get_all(db)
 
 
 @router.delete("/{category_id}",status_code=status.HTTP_204_NO_CONTENT)
@@ -53,9 +47,7 @@ def delete_category(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
-    category = db.query(Category).filter(
-        Category.id == category_id
-    ).first()
+    category = category_repository.get_by_id(db, category_id)
 
     if not category:
         raise NotFoundException("Category not found")
@@ -63,6 +55,6 @@ def delete_category(
     if category.products:
         raise BadRequestException("Cannot delete category with products")
 
-    db.delete(category)
-    db.commit()
+    category_repository.delete(db, category)
+
 
