@@ -12,18 +12,21 @@ from core.exception import (
     ForbiddenException,
     BadRequestException,
 )
+from repositories.user_repository import UserRepository
 
 router = APIRouter(
     prefix="/users",
     tags=["Users"]
 )
 
+user_repository = UserRepository()
+
 @router.get("/", response_model=list[UserResponse])
 def get_users(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
-    users = db.query(User).all()
+    users = user_repository.get_all(db)
 
     return users
 
@@ -38,31 +41,23 @@ def create_user(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
-    existing_user = db.query(User).filter(
-        User.username == user.username
-    ).first()
+    existing_user = user_repository.get_by_username(db, user.username)
 
     if existing_user:
         raise BadRequestException("Username already exists")
     
-    existing_email = db.query(User).filter(
-        User.email == user.email
-    ).first()
-
+    existing_email = user_repository.get_by_email(db, user.email)
+    
     if existing_email:
         raise BadRequestException("Email already exists")
-        
+
     new_user = User(
         username=user.username,
         email=user.email,
         password=hash_password(user.password)
     )
 
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-
-    return new_user
+    return user_repository.create(db, new_user)
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(
@@ -70,13 +65,12 @@ def delete_user(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
-    user = db.query(User).filter(User.id == user_id).first()
+    user = user_repository.get_by_id(db, user_id)
 
     if user is None:
         raise NotFoundException("User not found")
 
-    db.delete(user)
-    db.commit()
+    user_repository.delete(db, user)
 
 
 @router.put("/{user_id}/role")
@@ -86,10 +80,7 @@ def change_role(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
-
-    user = db.query(User).filter(
-        User.id == user_id
-    ).first()
+    user = user_repository.get_by_id(db, user_id)
 
     if user is None:
         raise NotFoundException("User not found")
@@ -98,9 +89,7 @@ def change_role(
         raise BadRequestException("Invalid role")
 
     user.role = role
-
-    db.commit()
-    db.refresh(user)
+    user = user_repository.save(db, user)
 
     return {
         "message": "Role updated",
@@ -115,24 +104,18 @@ def make_first_admin(
     db: Session = Depends(get_db)
 ):
 
-    existing_admin = db.query(User).filter(
-        User.role == UserRole.admin
-    ).first()
+    existing_admin = user_repository.get_admin(db)
 
     if existing_admin:
         raise BadRequestException("Admin already exists")
 
-    user = db.query(User).filter(
-        User.id == user_id
-    ).first()
+    user = user_repository.get_by_id(db, user_id)
 
     if user is None:
         raise NotFoundException("User not found")
 
     user.role = UserRole.admin
-
-    db.commit()
-    db.refresh(user)
+    user = user_repository.save(db, user)
 
     return {
         "message": "First admin created",
@@ -149,10 +132,7 @@ def reset_password(
     current_user: User = Depends(get_current_admin)
 ):
 
-    user = db.query(User).filter(
-        User.id == user_id
-    ).first()
-
+    user = user_repository.get_by_id(db, user_id)
 
     if user is None:
          raise NotFoundException("User not found")
@@ -161,7 +141,7 @@ def reset_password(
         data.new_password
     )
 
-    db.commit()
+    user = user_repository.save(db, user)
 
     return {
         "message": "Password successfully changed",
