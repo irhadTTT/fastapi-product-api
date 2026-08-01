@@ -7,7 +7,7 @@ Designed as a scalable backend foundation for future stock management features s
 
 ## Features 🚀
 
-* JWT-based user authentication
+s* JWT-based user authentication
 * Secure password hashing with bcrypt
 * Role-based authorization (Admin/User)
 * Protected user-specific resources
@@ -30,9 +30,8 @@ Designed as a scalable backend foundation for future stock management features s
 <img width="1895" height="1032" alt="Screenshot 2026-07-31 210242" src="https://github.com/user-attachments/assets/b09d6660-4d64-453c-9caf-6b5a92bce514" />
 * Centralized exception handling with custom API exceptions
 * Authentication rate limiting to prevent brute-force login attempts
+* Repository Pattern for database operations
 * Code quality improvements with Ruff linting and formatting
-<img width="1918" height="1078" alt="Screenshot 2026-07-31 234138" src="https://github.com/user-attachments/assets/abf771f8-261d-4d2f-8f8a-0c571ed11c73" />
-
 
 ## Tech Stack
 
@@ -150,53 +149,68 @@ Password: admin123
 The project follows a layered backend architecture:
 
 ```text
-                     Client
-                       |
-                       |
-                       ▼
+                         Client
+                            |
+                            |
+                            ▼
 
-              ┌────────────────┐
-              │    FastAPI     │
-              │     Routes     │
-              │    (Router)    │
-              └────────┬───────┘
-                       |
-                       ▼
+                 ┌──────────────────┐
+                 │      FastAPI     │
+                 │      Routes      │
+                 │    (Routers)     │
+                 └────────┬─────────┘
+                          |
+                          ▼
 
-              ┌────────────────┐
-              │    Schemas     │
-              │    Pydantic    │
-              │ Request/Response│
-              └────────┬───────┘
-                       |
-                       ▼
+                 ┌──────────────────┐
+                 │     Schemas      │
+                 │     Pydantic     │
+                 │ Request/Response │
+                 └────────┬─────────┘
+                          |
+                          ▼
 
-              ┌────────────────┐
-              │  SQLAlchemy    │
-              │     Models     │
-              │   ORM Layer    │
-              └────────┬───────┘
-                       |
-                       ▼
+                 ┌──────────────────┐
+                 │    Repository    │
+                 │      Layer       │
+                 │  Data Access     │
+                 │ UserRepository   │
+                 └────────┬─────────┘
+                          |
+                          ▼
 
-              ┌────────────────┐
-              │    Alembic     │
-              │   Migrations   │
-              └────────┬───────┘
-                       |
-                       ▼
+                 ┌──────────────────┐
+                 │   SQLAlchemy     │
+                 │      Models      │
+                 │    ORM Layer     │
+                 │ User, Post, ...  │
+                 └────────┬─────────┘
+                          |
+                          ▼
 
-              ┌────────────────┐
-              │   PostgreSQL   │
-              │    Database    │
-              └────────────────┘
-                       ▲
-                       |
-                       |
-              ┌────────────────┐
-              │    Docker      │
-              │ Docker Compose │
-              └────────────────┘
+                 ┌──────────────────┐
+                 │    PostgreSQL    │
+                 │     Database     │
+                 └──────────────────┘
+
+
+                 ┌──────────────────┐
+                 │     Alembic      │
+                 │    Migrations    │
+                 └────────┬─────────┘
+                          |
+                          ▼
+                 ┌──────────────────┐
+                 │     Database     │
+                 │     Schema       │
+                 └──────────────────┘
+
+
+                 ┌──────────────────┐
+                 │      Docker      │
+                 │ Docker Compose   │
+                 │ App + Database   │
+                 └──────────────────┘
 ```
 
 ---
@@ -209,28 +223,46 @@ fastapi-product-api/
 ├── database.py
 ├── dependencies.py
 │
+├── core/
+│   ├── __init__.py
+│   └── exceptions.py
+│
 ├── models/
 │   ├── __init__.py
 │   ├── product.py
-│   └── user.py
+│   ├── user.py
+│   └── category.py
 │
 ├── schemas/
 │   ├── __init__.py
 │   ├── product.py
 │   ├── user.py
-│   └── auth.py
+│   ├── auth.py
+│   └── category.py
+│
+├── repositories/
+│   ├── __init__.py
+│   ├── product_repository.py
+│   ├── user_repository.py
+│   └── category_repository.py
 │
 ├── router/
 │   ├── __init__.py
 │   ├── product.py
 │   ├── user.py
-│   └── auth.py
+│   ├── auth.py
+│   └── category.py
+│
+├── tests/
+│   ├── __init__.py
+│   ├── test_users.py
+│   ├── test_products.py
+│   └── test_categories.py
 │
 ├── requirements.txt
 ├── docker-compose.yml
 ├── Dockerfile
 ├── .env
-├── database.sqlite3
 └── README.md
 ```
 
@@ -279,22 +311,57 @@ http://127.0.0.1:8000/redoc
 
 ## Authentication
 
-| Method | Endpoint    | Description       |
-| ------ | ----------- | ----------------- |
-| POST   | `/register` | Create new user   |
-| POST   | `/login`    | Authenticate user |
+## Authentication
+
+| Method | Endpoint        | Description        |
+| ------ | --------------- | ------------------ |
+| POST   | `/auth/login`   | User login         |
+| POST   | `/auth/register`| Register user      |
+| GET    | `/auth/me`      | Get current user   |
+
+---
+
+## Users
+
+| Method | Endpoint                          | Description              |
+| ------ | --------------------------------- | ------------------------ |
+| GET    | `/users/`                         | Get users                |
+| POST   | `/users/`                         | Create user              |
+| DELETE | `/users/{user_id}`                | Delete user              |
+| PUT    | `/users/{user_id}/role`           | Change user role         |
+| POST   | `/users/make-first-admin`         | Make first admin         |
+| PUT    | `/users/{user_id}/reset-password` | Reset password           |
 
 ---
 
 ## Products
 
-| Method | Endpoint         | Description         |
-| ------ | ---------------- | ------------------- |
-| GET    | `/products`      | Get all products    |
-| GET    | `/products/{id}` | Get product details |
-| POST   | `/products`      | Create product      |
-| PUT    | `/products/{id}` | Update product      |
-| DELETE | `/products/{id}` | Delete product      |
+| Method | Endpoint                         | Description              |
+| ------ | -------------------------------- | ------------------------ |
+| GET    | `/products/`                     | Get products             |
+| POST   | `/products/`                     | Create product           |
+| GET    | `/products/{item_id}`            | Get product details      |
+| PUT    | `/products/{item_id}`            | Update product            |
+| DELETE | `/products/{item_id}`            | Delete product            |
+| POST   | `/products/{product_id}/image`   | Upload product image     |
+
+---
+
+## Categories
+
+| Method | Endpoint                         | Description              |
+| ------ | -------------------------------- | ------------------------ |
+| GET    | `/categories/`                   | Get categories           |
+| POST   | `/categories/`                   | Create category          |
+| DELETE | `/categories/{category_id}`      | Delete category          |
+
+---
+
+## Health Check
+
+| Method | Endpoint   | Description  |
+| ------ | ---------- | ------------ |
+| GET    | `/health`  | Health check |
 
 ---
 
@@ -313,26 +380,23 @@ http://127.0.0.1:8000/redoc
 
 Implemented security features:
 
-* JWT authentication
-* Password hashing with bcrypt
-* Protected routes
-* Input validation
-* Environment-based configuration
-
+* JWT authentication and authorization
+* Password hashing using bcrypt
+* Protected API routes
+* Role-based access control (User/Admin)
+* Input validation with Pydantic schemas
+* Environment-based configuration using `.env`
+* Secure password reset functionality
 ---
 
 ## 🚀 Future Improvements
 
 Possible improvements:
 
-- Automated testing with Pytest
-- API rate limiting
 - Refresh token implementation
-- Product categories
-- Image upload for products
-- Pagination and filtering
 - Cloud deployment
-- CI/CD pipeline
+- Automated test coverage improvements
+- Database optimization and indexing
 
 ---
 
