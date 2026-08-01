@@ -7,7 +7,7 @@ Designed as a scalable backend foundation for future stock management features s
 
 ## Features 🚀
 
-* JWT-based user authentication
+s* JWT-based user authentication
 * Secure password hashing with bcrypt
 * Role-based authorization (Admin/User)
 * Protected user-specific resources
@@ -32,8 +32,6 @@ Designed as a scalable backend foundation for future stock management features s
 * Authentication rate limiting to prevent brute-force login attempts
 * Repository Pattern for database operations
 * Code quality improvements with Ruff linting and formatting
-<img width="1918" height="1078" alt="Screenshot 2026-07-31 234138" src="https://github.com/user-attachments/assets/abf771f8-261d-4d2f-8f8a-0c571ed11c73" />
-
 
 ## Tech Stack
 
