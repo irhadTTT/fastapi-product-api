@@ -16,27 +16,27 @@ router = APIRouter(
 
 
 @router.post("/", response_model=CategoryResponse)
-def create_category(
+async def create_category(
     category: CategoryCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
-    return CategoryService.create_category(category, db, current_user)
+    return await CategoryService.create_category(category, db, current_user)
 
 
 @router.get("/", response_model=list[CategoryResponse])
-def get_categories(
+async def get_categories(
     db: Session = Depends(get_db)
 ):
-    return category_repository.get_all(db)
+    return await CategoryService.get_all(db)
 
 
 @router.delete("/{category_id}",status_code=status.HTTP_204_NO_CONTENT)
-def delete_category(
+async def delete_category(
     category_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
-    CategoryService.delete_category(category_id, db, current_user)
+    await CategoryService.delete_category(category_id, db, current_user)
 
 

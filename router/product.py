@@ -20,16 +20,16 @@ router = APIRouter(
 )
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def create_item(
+async def create_item(
     item: ItemCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return ProductService.create_item(item, db, current_user)
+    return await ProductService.create_item(item, db, current_user)
 
 
 @router.get("/", response_model=ProductsResponse)
-def get_items(
+async def get_items(
     q: str | None = Query(None),
     min_price: float | None = Query(None, gt=0),
     max_price: float | None = Query(None, gt=0),
@@ -40,7 +40,7 @@ def get_items(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return ProductService.get_items(db, q, min_price, max_price, sort_by, order, page, limit, current_user)
+    return await ProductService.get_items(db, q, min_price, max_price, sort_by, order, page, limit, current_user)
 
 
 @router.get("/{item_id}")
@@ -53,22 +53,22 @@ def get_item(
 
 
 @router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_item(
+async def delete_item(
     item_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
-    ProductService.delete_item(item_id, db, current_user)
+    await ProductService.delete_item(item_id, db, current_user)
 
 
 @router.put("/{item_id}")
-def update_item(
+async def update_item(
     item_id: int,
     item: ItemUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
-    return ProductService.update_item(item_id, item, db, current_user)
+    return await ProductService.update_item(item_id, item, db, current_user)
 
 #upload image 
 @router.post("/{product_id}/image")

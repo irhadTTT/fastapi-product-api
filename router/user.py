@@ -23,11 +23,11 @@ router = APIRouter(
 
 
 @router.get("/", response_model=list[UserResponse])
-def get_users(
+async def get_users(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
-    return user_repository.get_all(db)
+    return await UserService.get_users(db, current_user)
 
 
 @router.post(
@@ -35,30 +35,30 @@ def get_users(
     response_model=UserResponse,
     status_code=status.HTTP_201_CREATED
 )
-def create_user(
+async def create_user(
     user: UserCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
-    return UserService.create_user(user, db, current_user)
+    return await UserService.create_user(user, db, current_user)
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_user(
+async def delete_user(
     user_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
-    UserService.delete_user(user_id, db, current_user)
+   await UserService.delete_user(user_id, db, current_user)
 
 
 @router.put("/{user_id}/role")
-def change_role(
+async def change_role(
     user_id: int,
     role: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
-    return UserService.change_role(user_id, role, db, current_user)
+    return await UserService.change_role(user_id, role, db, current_user)
 
 
 @router.post("/make-first-admin")

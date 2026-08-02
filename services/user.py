@@ -8,14 +8,55 @@ from enums.sort import UserRole
 from models.user import User
 from repositories import user_repository
 from schemas.auth import PasswordReset
-from schemas.user import UserCreate
+from schemas.user import (
+    UserCreate,
+    UserResponse
+)
 from security import hash_password
+from services.cache_service import (
+    get_cache, 
+    set_cache, 
+    delete_cache_pattern
+)
+
 
 
 class UserService:
 
     @staticmethod
-    def create_user(
+    async def get_users(
+        db: Session,
+        current_user: User
+    ):
+        cache_key = "users:list"
+
+        cached = await get_cache(cache_key)
+
+        if cached:
+            return [
+                UserResponse.model_validate(user)
+                for user in cached
+        ]
+
+        users = user_repository.get_all(db)
+
+        response = [
+            UserResponse.model_validate(user)
+            for user in users
+        ]
+
+        await set_cache(
+            cache_key,
+            [
+                user.model_dump(mode="json")
+                for user in response
+            ],
+            expire=300
+        )
+        return response
+
+    @staticmethod
+    async def create_user(
         user: UserCreate,
         db: Session,
         current_user: User
@@ -36,11 +77,13 @@ class UserService:
             password=hash_password(user.password)
         )
 
+        await delete_cache_pattern("users:*")
+
         return user_repository.create(db, new_user)
 
 
     @staticmethod
-    def delete_user(
+    async def delete_user(
         user_id: int,
         db: Session,
         current_user: User
@@ -51,10 +94,11 @@ class UserService:
             raise NotFoundException("User not found")
 
         user_repository.delete(db, user)
+        await delete_cache_pattern("users:*")
 
 
     @staticmethod
-    def change_role(
+    async def change_role(
         user_id: int,
         role: str,
         db: Session,
@@ -70,6 +114,8 @@ class UserService:
 
         user.role = role
         user = user_repository.save(db, user)
+
+        await delete_cache_pattern("users:*")
 
         return {
             "message": "Role updated",

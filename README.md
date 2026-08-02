@@ -53,11 +53,24 @@ Built with production practices in mind, including centralized exception handlin
 * Dockerized development environment
 * Docker Compose setup for application and database
 
+## Caching & Performance
+- Redis integration for API response caching
+- Async Redis operations for improved performance
+- Cache management with configurable expiration times (TTL)
+- Cached frequently accessed resources (Products, Users, Categories, Stock Movements)
+- Automatic cache invalidation support for data updates
+
 ### API Documentation & Quality
 * Swagger/OpenAPI interactive documentation
 * Automated testing with Pytest for authentication and category features
 * Code quality improvements with Ruff linting and formatting
 <img width="1895" height="1032" alt="Screenshot 2026-07-31 210242" src="https://github.com/user-attachments/assets/b09d6660-4d64-453c-9caf-6b5a92bce514" />
+
+### API Quality & CI/CD
+* Automated testing with Pytest
+* CI pipeline for automated checks
+* Code quality checks with Ruff
+* Swagger/OpenAPI documentation
 
 ## Tech Stack
 
@@ -158,7 +171,7 @@ Password: admin123
 The project follows a layered backend architecture:
 
 ```text
-                                            Client
+                               Client
                                 |
                                 |
                                 ▼
@@ -168,9 +181,13 @@ The project follows a layered backend architecture:
                     │      Routers       │
                     │                    │
                     │ auth.py            │
+                    │ user.py            │
                     │ product.py         │
                     │ category.py        │
-                    │ stock.py           │
+                    │ stock_movement.py  │
+                    │                    │
+                    │ Request handling   │
+                    │ Response handling  │
                     └─────────┬──────────┘
                               |
                               |
@@ -183,6 +200,7 @@ The project follows a layered backend architecture:
                     │ Request Models     │
                     │ Response Models    │
                     │ Validation         │
+                    │ Serialization      │
                     └─────────┬──────────┘
                               |
                               |
@@ -196,50 +214,52 @@ The project follows a layered backend architecture:
                     │ UserService        │
                     │ ProductService     │
                     │ CategoryService    │
-                    │ StockService       │
+                    │ StockMovementService│
                     │                    │
-                    │ - permissions     │
-                    │ - stock rules     │
-                    │ - email verify    │
-                    │ - transactions    │
-                    └─────────┬──────────┘
-                              |
-                              |
-                              ▼
+                    │ - permissions      │
+                    │ - stock rules      │
+                    │ - email verification│
+                    │ - transactions     │
+                    │ - cache handling   │
+                    └───────┬───────┬────┘
+                            |       |
+                            |       |
+                            ▼       ▼
 
-                    ┌────────────────────┐
-                    │  Repository Layer  │
-                    │   Data Access      │
-                    │                    │
-                    │ UserRepository     │
-                    │ ProductRepository  │
-                    │ CategoryRepository │
-                    │ StockRepository    │
-                    │                    │
-                    │ CRUD only          │
-                    │ No business rules  │
-                    └─────────┬──────────┘
-                              |
-                              |
-                              ▼
+              ┌────────────────┐   ┌────────────────┐
+              │ Repository     │   │ Redis Cache    │
+              │ Layer          │   │                │
+              │                │   │ Cache Service  │
+              │ UserRepository │   │                │
+              │ ProductRepository│ │ GET / SET      │
+              │ CategoryRepository│ │ DELETE        │
+              │ StockMovementRepository│ TTL        │
+              │                │   │ Expiration     │
+              │ CRUD only      │   └────────────────┘
+              │ No business    │
+              │ logic          │
+              └───────┬────────┘
+                      |
+                      |
+                      ▼
 
-                    ┌────────────────────┐
-                    │    SQLAlchemy      │
-                    │       ORM          │
-                    │                    │
-                    │ User Model         │
-                    │ Product Model      │
-                    │ Category Model     │
-                    │ StockMovement      │
-                    └─────────┬──────────┘
-                              |
-                              |
-                              ▼
+              ┌────────────────┐
+              │   SQLAlchemy   │
+              │       ORM      │
+              │                │
+              │ User           │
+              │ Product        │
+              │ Category       │
+              │ StockMovement  │
+              └───────┬────────┘
+                      |
+                      |
+                      ▼
 
-                    ┌────────────────────┐
-                    │    PostgreSQL      │
-                    │     Database       │
-                    └────────────────────┘
+              ┌────────────────┐
+              │   PostgreSQL   │
+              │    Database    │
+              └────────────────┘
 
 
 
@@ -249,12 +269,13 @@ The project follows a layered backend architecture:
         ┌────────────────────┐
         │      Security      │
         │                    │
-        │ JWT                │
+        │ JWT Authentication │
         │ Password Hashing   │
-        │ Permissions        │
-        └─────────┬──────────┘
-                  |
-                  ▼
+        │ bcrypt             │
+        │ Role Permissions   │
+        │ Admin/User Access  │
+        └────────────────────┘
+
 
 
         ┌────────────────────┐
@@ -262,18 +283,32 @@ The project follows a layered backend architecture:
         │                    │
         │ get_current_user   │
         │ get_admin_user     │
-        │ DB Session        │
+        │ Database Session   │
+        │ Dependency Inject. │
         └────────────────────┘
 
 
 
         ┌────────────────────┐
-        │      Core          │
+        │       Core         │
         │                    │
-        │ Exceptions         │
+        │ Configuration      │
+        │ Custom Exceptions  │
         │ Email Service      │
-        │ Config             │
         │ Logging            │
+        │ Application Utils  │
+        └────────────────────┘
+
+
+
+        ┌────────────────────┐
+        │      Redis         │
+        │     Caching        │
+        │                    │
+        │ Cache Service      │
+        │ TTL Management     │
+        │ Cache Invalidation │
+        │ Performance Layer  │
         └────────────────────┘
 
 
@@ -282,8 +317,9 @@ The project follows a layered backend architecture:
         │      Alembic       │
         │    Migrations      │
         │                    │
-        │ Version Control    │
-        │ Database Schema    │
+        │ Schema Versioning  │
+        │ Database Changes   │
+        │ Migration History  │
         └─────────┬──────────┘
                   |
                   ▼
@@ -296,10 +332,24 @@ The project follows a layered backend architecture:
 
         ┌────────────────────┐
         │      Docker        │
+        │                    │
+        │ Dockerfile         │
         │ Docker Compose     │
         │                    │
         │ FastAPI Container  │
         │ PostgreSQL         │
+        │ Redis Container    │
+        └────────────────────┘
+
+
+
+        ┌────────────────────┐
+        │        CI/CD       │
+        │                    │
+        │ GitHub Actions     │
+        │ Automated Tests    │
+        │ Docker Build       │
+        │ Code Quality       │
         └────────────────────┘
 ```
 

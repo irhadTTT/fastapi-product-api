@@ -15,43 +15,41 @@ router = APIRouter(
 )
 
 @router.get("/", response_model=list[StockMovementResponse])
-def get_stock_movements(
+async def get_stock_movements(
     db: Session = Depends(get_db)
 ):
-    return stock_movement_repository.get_all(db)
+    return await StockMovementService.get_all_stock_movements(db)
 
 @router.post(
     "/",
     response_model=StockMovementResponse,
     status_code=status.HTTP_201_CREATED
 )
-def create_stock_movement(
+async def create_stock_movement(
     data: StockMovementCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return StockMovementService.create(db, data, current_user)
+    return await StockMovementService.create(db, data, current_user)
 
 
 @router.get(
     "/product/{product_id}",
     response_model=list[StockMovementResponse]
 )
-def get_product_stock_history(
+async def get_by_product_id(
     product_id: int,
     db: Session = Depends(get_db)
 ):
-
-    return stock_movement_repository.get_by_product_id(db, product_id)
+    return await StockMovementService.get_stock_history_product(product_id, db)
 
 
 @router.get(
     "/user/{user_id}",
     response_model=list[StockMovementResponse]
 )
-def get_user_stock_history(
+async def get_by_user_id(
     user_id: int,
     db: Session = Depends(get_db)
 ):
-
-    return stock_movement_repository.get_by_user_id(db, user_id)
+    return await StockMovementService.get_stock_history_user(user_id, db)

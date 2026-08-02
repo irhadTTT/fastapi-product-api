@@ -11,12 +11,17 @@ from models.product import Item
 from models.user import User
 from repositories import product_repository
 from schemas.product import ItemCreate, ItemUpdate, ProductsResponse
+from services.cache_service import (
+    get_cache, 
+    set_cache, 
+    delete_cache_pattern
+)
 
 
 class ProductService:
 
     @staticmethod
-    def create_item(
+    async def create_item(
         item: ItemCreate,
         db: Session,
         current_user: User
@@ -29,10 +34,13 @@ class ProductService:
             category_id=item.category_id
         )
 
-        return product_repository.create(db, new_item)
+        created_item = product_repository.create(db, new_item)
+        await delete_cache_pattern("products:*")
+
+        return created_item
 
     @staticmethod
-    def get_items(
+    async def get_items(
         db: Session,
         q,
         min_price,
@@ -43,6 +51,23 @@ class ProductService:
         limit,
         current_user
     ) -> ProductsResponse:
+
+        cache_key = (
+            f"products:"
+            f"user:{current_user.id}:"
+            f"q:{q}:"
+            f"min:{min_price}:"
+            f"max:{max_price}:"
+            f"sort:{sort_by}:"
+            f"order:{order}:"
+            f"page:{page}:"
+            f"limit:{limit}"
+        )
+
+        cached = await get_cache(cache_key)
+
+        if cached:
+            return ProductsResponse(**cached)
 
         query = db.query(Item)
 
@@ -85,13 +110,22 @@ class ProductService:
 
         total_pages = math.ceil(total / limit)
 
-        return {
-            "products": items,
-            "page": page,
-            "limit": limit,
-            "total": total,
-            "total_pages": total_pages
-        }
+        response = ProductsResponse(
+            products=items,
+            page=page,
+            limit=limit,
+            total=total,
+            total_pages=total_pages
+        )
+
+        await set_cache(
+            cache_key,
+            response,
+            expire=300
+        )
+
+        return response
+
 
     @staticmethod
     def get_item(
@@ -111,7 +145,7 @@ class ProductService:
         return item
 
     @staticmethod
-    def delete_item(
+    async def delete_item(
         item_id: int,
         db: Session,
         current_user: User
@@ -131,9 +165,10 @@ class ProductService:
                 os.remove(image_path)
 
         product_repository.delete(db, item)
+        await delete_cache_pattern("products:*")
 
     @staticmethod
-    def update_item(
+    async def update_item(
         item_id: int,
         item: ItemUpdate,
         db: Session,
@@ -151,7 +186,10 @@ class ProductService:
         db_item.price = item.price
         db_item.category_id = item.category_id
         
-        return product_repository.save(db, db_item)
+        saved = product_repository.save(db, db_item)
+        await delete_cache_pattern("products:*")
+
+        return saved
 
     @staticmethod
     async def upload_product_image(
