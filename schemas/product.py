@@ -1,5 +1,7 @@
-from pydantic import BaseModel, Field
 from datetime import datetime
+
+from pydantic import BaseModel, Field
+
 from schemas.category import CategoryResponse
 
 
@@ -28,6 +30,7 @@ class ItemResponse(BaseModel):
     name: str
     price: int
     image_url: str | None = None
+    stock_quantity: int  | None = None
     category: CategoryResponse | None = None
     created_at: datetime | None = None
     #AutoMapper entity-DTO kao i kod .net

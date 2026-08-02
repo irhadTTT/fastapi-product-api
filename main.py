@@ -1,14 +1,15 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from limiter import limiter
-from database import Base, engine
-from router import auth, category, product, user
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+
 from core.exception import (
     AppException,
     app_exception_handler,
 )
+from database import Base, engine
+from limiter import limiter
+from router import auth, category, product, stock_movement, user
 
 Base.metadata.create_all(bind=engine)
 
@@ -31,6 +32,7 @@ app.include_router(user.router)
 app.include_router(product.router)
 app.include_router(auth.router)
 app.include_router(category.router)
+app.include_router(stock_movement.router)
 
 app.mount(
     "/uploads",

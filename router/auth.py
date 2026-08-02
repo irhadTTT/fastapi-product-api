@@ -1,22 +1,20 @@
-from fastapi import APIRouter, Depends, status, Request, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
+from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
+
+from core.email import send_verification_email
+from core.exception import BadRequestException, UnauthorizedException
+from core.security import create_email_token
 from database import get_db
+from dependencies import get_current_user
 from jwt_handler import create_access_token
+from limiter import limiter
 from models.user import User
+from repositories import user_repository
 from schemas.user import UserCreate, UserResponse
 from security import hash_password, verify_password
-from dependencies import get_current_user
-from limiter import limiter
-from slowapi.util import get_remote_address
-from core.exception import (
-    BadRequestException,
-    UnauthorizedException
-)
-from repositories import user_repository
-from core.email import send_verification_email
-from core.security import create_email_token
-
+from services.auth import AuthService
 
 router = APIRouter(
     prefix="/auth",
@@ -34,22 +32,7 @@ async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
-    user = user_repository.get_by_username(db, form_data.username)
-
-    if user is None or not verify_password(form_data.password, user.password):
-        raise UnauthorizedException("Invalid username or password")
-
-    access_token = create_access_token(
-        data={
-            "sub": str(user.id),
-            "role": user.role
-        }
-    )
-
-    return {
-        "access_token": access_token,
-        "token_type": "bearer"
-    }
+    return await AuthService.login(request, form_data, db)
 
 
 @router.post(
@@ -63,37 +46,7 @@ def register(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
-    existing_user = user_repository.get_by_email(db, user.email)
-
-    if existing_user:
-        raise BadRequestException("Email already registered.")
-
-    existing_username = user_repository.get_by_username(db, user.username)
-
-    if existing_username:
-        raise BadRequestException("Username already exists.")
-
-    new_user = User(
-        username=user.username,
-        email=user.email,
-        password=hash_password(user.password)
-    )
-
-    user_repository.create(db, new_user)
-
-    token = create_email_token(
-        new_user.email
-    )
-
-    background_tasks.add_task(
-        send_verification_email,
-        new_user.email,
-        token
-    )
-
-    return {
-        "message": "User created successfully."
-    }
+    return AuthService.register(user, background_tasks, db)
 
 @router.get("/me", response_model=UserResponse)
 def get_me(current_user: User = Depends(get_current_user)):

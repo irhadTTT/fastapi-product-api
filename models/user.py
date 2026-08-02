@@ -1,7 +1,7 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.orm import relationship
+
 from database import Base
-from sqlalchemy import Boolean
 
 
 class User(Base):
@@ -20,4 +20,8 @@ class User(Base):
     is_verified = Column(
         Boolean,
         default=False
+    )
+    stock_movements = relationship(
+        "StockMovement",
+        back_populates="user"
     )

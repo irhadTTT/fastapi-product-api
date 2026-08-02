@@ -1,5 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+
 from jose import jwt
+
 from core.config import settings
 
 
@@ -7,7 +9,7 @@ def create_email_token(email: str):
 
     payload = {
         "sub": email,
-        "exp": datetime.utcnow() + timedelta(hours=24)
+        "exp": datetime.now(timezone.utc) + timedelta(hours=24)
     }
 
     return jwt.encode(

@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+
 from models.product import Item
 
 
@@ -59,3 +60,7 @@ def save(
 
 def query_items(db: Session):
     return db.query(Item)
+
+def save_product(db: Session, product: Item):
+    db.add(product)
+    return product

@@ -1,16 +1,19 @@
 import os
+
 from dotenv import load_dotenv
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
-from database import get_db
-from models.user import User
+
 from core.exception import (
-    NotFoundException,
+    BadRequestException,
     ForbiddenException,
+    NotFoundException,
     UnauthorizedException,
 )
+from database import get_db
+from models.user import User
 
 load_dotenv()
 

@@ -1,6 +1,8 @@
 from sqlalchemy.orm import Session
-from models.user import User
+
 from enums.sort import UserRole
+from models.user import User
+
 
 def get_all(db: Session):
     return db.query(User).all()
