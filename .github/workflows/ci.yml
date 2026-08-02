@@ -15,6 +15,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    
+    env:
+      TESTING: "True"
 
     services:
       postgres:
@@ -30,6 +33,11 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
 
 
     env:
@@ -78,7 +86,13 @@ jobs:
         run: |
           ruff format --check .
 
+      - name: Run tests
+        run: |
+          pytest -v
+          - name: Debug TESTING
+            run: echo "TESTING=$TESTING"
 
       - name: Run tests
         run: |
           pytest -v
+
