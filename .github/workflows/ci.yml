@@ -23,7 +23,6 @@ jobs:
           POSTGRES_USER: fastapi
           POSTGRES_PASSWORD: irhad
           POSTGRES_DB: fastapi_products_test
-          TESTING: "True"
         ports:
           - 5432:5432
         options: >-
@@ -39,6 +38,7 @@ jobs:
 
 
     env:
+      TESTING: "True"
       DATABASE_URL: postgresql://fastapi:irhad@localhost:5432/fastapi_products_test
       SECRET_KEY: test_secret_key
       ALGORITHM: HS256
