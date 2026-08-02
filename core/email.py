@@ -18,6 +18,9 @@ conf = ConnectionConfig(
 
 async def send_verification_email(email: str, token: str):
 
+    if settings.TESTING:
+        return
+
     link = f"{settings.FRONTEND_URL}/auth/verify-email?token={token}"
 
     message = MessageSchema(

@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     MAIL_SERVER: str
     MAIL_PORT: int
     FRONTEND_URL: str
+    TESTING: bool = False
 
     class Config:
         env_file = ".env"

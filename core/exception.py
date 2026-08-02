@@ -19,7 +19,7 @@ class ForbiddenException(AppException):
 
 
 class UnauthorizedException(AppException):
-    def __init__(self, detail="Bad request"):
+    def __init__(self, detail="Unauthorized"):
         super().__init__(401, detail)
 
 
@@ -29,6 +29,4 @@ class BadRequestException(AppException):
 
 
 async def app_exception_handler(request: Request, exc: AppException):
-    return JSONResponse(
-        status_code=exc.status_code, content={"success": False, "message": exc.detail}
-    )
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
