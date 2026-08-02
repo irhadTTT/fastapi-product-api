@@ -16,37 +16,34 @@ from schemas.user import UserCreate, UserResponse
 from security import hash_password, verify_password
 from services.auth import AuthService
 
-router = APIRouter(
-    prefix="/auth",
-    tags=["Auth"]
-)
+router = APIRouter(prefix="/auth", tags=["Auth"])
+
 
 @router.post(
     "/login",
     summary="User login",
-    description="Authenticate user and return JWT access token"
-    )
+    description="Authenticate user and return JWT access token",
+)
 @limiter.limit("5/minute")
 async def login(
     request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     return await AuthService.login(request, form_data, db)
 
 
 @router.post(
-        "/register", 
-        status_code=status.HTTP_201_CREATED,
-        summary="Register user",
-        description="Register new user",
-    )
+    "/register",
+    status_code=status.HTTP_201_CREATED,
+    summary="Register user",
+    description="Register new user",
+)
 def register(
-    user: UserCreate,
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db)
+    user: UserCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)
 ):
     return AuthService.register(user, background_tasks, db)
+
 
 @router.get("/me", response_model=UserResponse)
 def get_me(current_user: User = Depends(get_current_user)):

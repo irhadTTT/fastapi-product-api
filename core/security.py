@@ -7,13 +7,6 @@ from core.config import settings
 
 def create_email_token(email: str):
 
-    payload = {
-        "sub": email,
-        "exp": datetime.now(timezone.utc) + timedelta(hours=24)
-    }
+    payload = {"sub": email, "exp": datetime.now(timezone.utc) + timedelta(hours=24)}
 
-    return jwt.encode(
-        payload,
-        settings.SECRET_KEY,
-        algorithm=settings.ALGORITHM
-    )
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)

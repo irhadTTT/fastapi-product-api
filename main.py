@@ -13,20 +13,12 @@ from router import auth, category, product, stock_movement, user
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(
-    title="StockFlow API project"
-)
+app = FastAPI(title="StockFlow API project")
 
-app.add_exception_handler(
-    AppException,
-    app_exception_handler
-)
+app.add_exception_handler(AppException, app_exception_handler)
 
 app.state.limiter = limiter
-app.add_exception_handler(
-    RateLimitExceeded,
-    _rate_limit_exceeded_handler
-)
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.include_router(user.router)
 app.include_router(product.router)
@@ -34,15 +26,9 @@ app.include_router(auth.router)
 app.include_router(category.router)
 app.include_router(stock_movement.router)
 
-app.mount(
-    "/uploads",
-    StaticFiles(directory="uploads"),
-    name="uploads"
-)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 
 @app.get("/health")
 def health_check():
-    return {
-        "status": "ok",
-        "service": "FastAPI Product API"
-    }
+    return {"status": "ok", "service": "FastAPI Product API"}

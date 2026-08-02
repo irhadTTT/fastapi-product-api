@@ -6,15 +6,14 @@ from models.category import Category
 def get_all(db: Session):
     return db.query(Category).all()
 
+
 def get_by_id(db: Session, category_id: int):
-    return db.query(Category).filter(
-        Category.id == category_id
-    ).first()
+    return db.query(Category).filter(Category.id == category_id).first()
+
 
 def get_by_name(db: Session, name: str):
-    return db.query(Category).filter(
-        Category.name == name
-    ).first()
+    return db.query(Category).filter(Category.name == name).first()
+
 
 def create(db: Session, category: Category):
     db.add(category)
@@ -22,6 +21,7 @@ def create(db: Session, category: Category):
     db.refresh(category)
 
     return category
+
 
 def delete(db: Session, category: Category):
     db.delete(category)

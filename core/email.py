@@ -7,7 +7,7 @@ conf = ConnectionConfig(
     MAIL_USERNAME=settings.MAIL_USERNAME,
     MAIL_PASSWORD=settings.MAIL_PASSWORD,
     MAIL_FROM=settings.MAIL_FROM,
-    MAIL_FROM_NAME = settings.MAIL_FROM_NAME,
+    MAIL_FROM_NAME=settings.MAIL_FROM_NAME,
     MAIL_SERVER=settings.MAIL_SERVER,
     MAIL_PORT=settings.MAIL_PORT,
     MAIL_STARTTLS=True,
@@ -16,15 +16,9 @@ conf = ConnectionConfig(
 )
 
 
-async def send_verification_email(
-    email: str,
-    token: str
-):
+async def send_verification_email(email: str, token: str):
 
-    link = (
-        f"{settings.FRONTEND_URL}/auth/verify-email"
-        f"?token={token}"
-    )
+    link = f"{settings.FRONTEND_URL}/auth/verify-email?token={token}"
 
     message = MessageSchema(
         subject="Verify your StockFlow account",
@@ -65,7 +59,7 @@ async def send_verification_email(
             </body>
         </html>
         """,
-        subtype="html"
+        subtype="html",
     )
 
     fm = FastMail(conf)

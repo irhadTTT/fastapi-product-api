@@ -13,12 +13,9 @@ from security import hash_password, verify_password
 
 
 class AuthService:
-
     @staticmethod
     async def login(
-        request: Request,
-        form_data: OAuth2PasswordRequestForm,
-        db: Session
+        request: Request, form_data: OAuth2PasswordRequestForm, db: Session
     ):
         user = user_repository.get_by_username(db, form_data.username)
 
@@ -26,24 +23,13 @@ class AuthService:
             raise UnauthorizedException("Invalid username or password")
 
         access_token = create_access_token(
-            data={
-                "sub": str(user.id),
-                "role": user.role
-            }
+            data={"sub": str(user.id), "role": user.role}
         )
 
-        return {
-            "access_token": access_token,
-            "token_type": "bearer"
-        }
-
+        return {"access_token": access_token, "token_type": "bearer"}
 
     @staticmethod
-    def register(
-        user: UserCreate,
-        background_tasks: BackgroundTasks,
-        db: Session
-    ):
+    def register(user: UserCreate, background_tasks: BackgroundTasks, db: Session):
         existing_user = user_repository.get_by_email(db, user.email)
 
         if existing_user:
@@ -57,21 +43,13 @@ class AuthService:
         new_user = User(
             username=user.username,
             email=user.email,
-            password=hash_password(user.password)
+            password=hash_password(user.password),
         )
 
         user_repository.create(db, new_user)
 
-        token = create_email_token(
-            new_user.email
-        )
+        token = create_email_token(new_user.email)
 
-        background_tasks.add_task(
-            send_verification_email,
-            new_user.email,
-            token
-        )
+        background_tasks.add_task(send_verification_email, new_user.email, token)
 
-        return {
-            "message": "User created successfully."
-        }
+        return {"message": "User created successfully."}

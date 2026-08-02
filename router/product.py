@@ -14,16 +14,14 @@ from models.user import User
 from schemas.product import ItemCreate, ItemUpdate, ProductsResponse
 from services.product import ProductService
 
-router = APIRouter(
-    prefix="/products",
-    tags=["Products"]
-)
+router = APIRouter(prefix="/products", tags=["Products"])
+
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_item(
     item: ItemCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     return await ProductService.create_item(item, db, current_user)
 
@@ -38,16 +36,19 @@ async def get_items(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
-    return await ProductService.get_items(db, q, min_price, max_price, sort_by, order, page, limit, current_user)
+    return await ProductService.get_items(
+        db, q, min_price, max_price, sort_by, order, page, limit, current_user
+    )
 
 
 @router.get("/{item_id}")
 def get_item(
-    item_id: int, 
+    item_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)):
+    current_user: User = Depends(get_current_user),
+):
 
     return ProductService.get_item(db, item_id, current_user)
 
@@ -56,7 +57,7 @@ def get_item(
 async def delete_item(
     item_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin)
+    current_user: User = Depends(get_current_admin),
 ):
     await ProductService.delete_item(item_id, db, current_user)
 
@@ -66,16 +67,17 @@ async def update_item(
     item_id: int,
     item: ItemUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin)
+    current_user: User = Depends(get_current_admin),
 ):
     return await ProductService.update_item(item_id, item, db, current_user)
 
-#upload image 
+
+# upload image
 @router.post("/{product_id}/image")
 async def upload_product_image(
     product_id: int,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     return await ProductService.upload_product_image(product_id, file, db, current_user)

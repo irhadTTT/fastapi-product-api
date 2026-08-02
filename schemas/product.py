@@ -6,37 +6,30 @@ from schemas.category import CategoryResponse
 
 
 class ItemCreate(BaseModel):
-    name: str = Field(
-        min_length=3,
-        max_length=50
-    )
-    price: float= Field(
-        gt=0
-    )
+    name: str = Field(min_length=3, max_length=50)
+    price: float = Field(gt=0)
     category_id: int | None = None
 
+
 class ItemUpdate(BaseModel):
-    name: str = Field(
-        min_length=3,
-        max_length=50
-    )
-    price: float= Field(
-        gt=0
-    )
+    name: str = Field(min_length=3, max_length=50)
+    price: float = Field(gt=0)
     category_id: int | None = None
+
 
 class ItemResponse(BaseModel):
     id: int
     name: str
     price: int
     image_url: str | None = None
-    stock_quantity: int  | None = None
+    stock_quantity: int | None = None
     category: CategoryResponse | None = None
     created_at: datetime | None = None
-    #AutoMapper entity-DTO kao i kod .net
+
+    # AutoMapper entity-DTO kao i kod .net
     class Config:
         from_attributes = True
-        #dozvoli mapiranje Entity-DTO
+        # dozvoli mapiranje Entity-DTO
 
 
 class ProductsResponse(BaseModel):
@@ -45,6 +38,6 @@ class ProductsResponse(BaseModel):
     limit: int
     total: int
     total_pages: int
-    
+
     class Config:
         from_attributes = True

@@ -11,17 +11,7 @@ class User(Base):
     username = Column(String, unique=True)
     email = Column(String, unique=True, index=True)
     password = Column(String)
-    products = relationship(
-        "Item",
-        back_populates="owner",
-        cascade="all, delete"
-    )
+    products = relationship("Item", back_populates="owner", cascade="all, delete")
     role = Column(String, default="user")
-    is_verified = Column(
-        Boolean,
-        default=False
-    )
-    stock_movements = relationship(
-        "StockMovement",
-        back_populates="user"
-    )
+    is_verified = Column(Boolean, default=False)
+    stock_movements = relationship("StockMovement", back_populates="user")

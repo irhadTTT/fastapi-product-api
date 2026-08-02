@@ -11,27 +11,18 @@ from models.product import Item
 from models.user import User
 from repositories import product_repository
 from schemas.product import ItemCreate, ItemUpdate, ProductsResponse
-from services.cache_service import (
-    get_cache, 
-    set_cache, 
-    delete_cache_pattern
-)
+from services.cache_service import delete_cache_pattern, get_cache, set_cache
 
 
 class ProductService:
-
     @staticmethod
-    async def create_item(
-        item: ItemCreate,
-        db: Session,
-        current_user: User
-    ):
+    async def create_item(item: ItemCreate, db: Session, current_user: User):
 
         new_item = Item(
             name=item.name,
             price=item.price,
             owner_id=current_user.id,
-            category_id=item.category_id
+            category_id=item.category_id,
         )
 
         created_item = product_repository.create(db, new_item)
@@ -41,15 +32,7 @@ class ProductService:
 
     @staticmethod
     async def get_items(
-        db: Session,
-        q,
-        min_price,
-        max_price,
-        sort_by,
-        order,
-        page,
-        limit,
-        current_user
+        db: Session, q, min_price, max_price, sort_by, order, page, limit, current_user
     ) -> ProductsResponse:
 
         cache_key = (
@@ -72,18 +55,14 @@ class ProductService:
         query = db.query(Item)
 
         if current_user.role != UserRole.admin:
-            query = query.filter(
-                Item.owner_id == current_user.id
-            )
-        
+            query = query.filter(Item.owner_id == current_user.id)
+
         if q:
-            query = query.filter(
-                Item.name.ilike(f"%{q}%")
-            )
+            query = query.filter(Item.name.ilike(f"%{q}%"))
 
         if min_price:
             query = query.filter(Item.price >= min_price)
-        
+
         if max_price:
             query = query.filter(Item.price <= max_price)
 
@@ -103,36 +82,23 @@ class ProductService:
             else:
                 query = query.order_by(Item.created_at.asc())
 
-        skip = (page-1)*limit
+        skip = (page - 1) * limit
         total = query.count()
 
-        items = (query.offset(skip).limit(limit).all())
+        items = query.offset(skip).limit(limit).all()
 
         total_pages = math.ceil(total / limit)
 
         response = ProductsResponse(
-            products=items,
-            page=page,
-            limit=limit,
-            total=total,
-            total_pages=total_pages
+            products=items, page=page, limit=limit, total=total, total_pages=total_pages
         )
 
-        await set_cache(
-            cache_key,
-            response,
-            expire=300
-        )
+        await set_cache(cache_key, response, expire=300)
 
         return response
 
-
     @staticmethod
-    def get_item(
-        item_id: int,
-        db: Session,
-        current_user: User
-    ):
+    def get_item(item_id: int, db: Session, current_user: User):
 
         item = product_repository.get_by_id(item_id, db)
 
@@ -141,21 +107,17 @@ class ProductService:
 
         if current_user.role != UserRole.admin and item.owner_id != current_user.id:
             raise ForbiddenException("You cannot access this product")
-    
+
         return item
 
     @staticmethod
-    async def delete_item(
-        item_id: int,
-        db: Session,
-        current_user: User
-    ):
+    async def delete_item(item_id: int, db: Session, current_user: User):
 
         item = product_repository.get_by_id(db, item_id)
 
         if item is None:
             raise NotFoundException("Product not found")
-            
+
         if current_user.role != UserRole.admin and item.owner_id != current_user.id:
             raise ForbiddenException("You cannot delete this product")
 
@@ -169,23 +131,20 @@ class ProductService:
 
     @staticmethod
     async def update_item(
-        item_id: int,
-        item: ItemUpdate,
-        db: Session,
-        current_user: User
+        item_id: int, item: ItemUpdate, db: Session, current_user: User
     ):
         db_item = product_repository.get_by_id(db, item_id)
 
         if db_item is None:
             raise NotFoundException("Product not found")
-            
+
         if current_user.role != UserRole.admin and db_item.owner_id != current_user.id:
             raise ForbiddenException("You cannot update this product")
 
         db_item.name = item.name
         db_item.price = item.price
         db_item.category_id = item.category_id
-        
+
         saved = product_repository.save(db, db_item)
         await delete_cache_pattern("products:*")
 
@@ -193,10 +152,7 @@ class ProductService:
 
     @staticmethod
     async def upload_product_image(
-        product_id: int,
-        file: UploadFile,
-        db: Session,
-        current_user: User
+        product_id: int, file: UploadFile, db: Session, current_user: User
     ):
         product = product_repository.get_by_id(db, product_id)
 
@@ -206,10 +162,7 @@ class ProductService:
         if product.owner_id != current_user.id and current_user.role != UserRole.admin:
             raise ForbiddenException("Not enough permissions")
 
-        allowed_types = [
-            "image/jpeg",
-            "image/png"
-        ]
+        allowed_types = ["image/jpeg", "image/png"]
 
         if file.content_type not in allowed_types:
             raise BadRequestException("Only jpg and png images are allowed")
@@ -233,5 +186,5 @@ class ProductService:
 
         return {
             "message": "Image uploaded successfully",
-            "image_url": product.image_url
+            "image_url": product.image_url,
         }

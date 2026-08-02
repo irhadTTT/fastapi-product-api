@@ -6,9 +6,11 @@ class SortField(str, Enum):
     name = "name"
     created_at = "created_at"
 
+
 class SortOrder(str, Enum):
     asc = "asc"
     desc = "desc"
+
 
 class UserRole(str, Enum):
     admin = "admin"

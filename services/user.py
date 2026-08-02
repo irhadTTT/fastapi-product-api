@@ -8,86 +8,54 @@ from enums.sort import UserRole
 from models.user import User
 from repositories import user_repository
 from schemas.auth import PasswordReset
-from schemas.user import (
-    UserCreate,
-    UserResponse
-)
+from schemas.user import UserCreate, UserResponse
 from security import hash_password
-from services.cache_service import (
-    get_cache, 
-    set_cache, 
-    delete_cache_pattern
-)
-
+from services.cache_service import delete_cache_pattern, get_cache, set_cache
 
 
 class UserService:
-
     @staticmethod
-    async def get_users(
-        db: Session,
-        current_user: User
-    ):
+    async def get_users(db: Session, current_user: User):
         cache_key = "users:list"
 
         cached = await get_cache(cache_key)
 
         if cached:
-            return [
-                UserResponse.model_validate(user)
-                for user in cached
-        ]
+            return [UserResponse.model_validate(user) for user in cached]
 
         users = user_repository.get_all(db)
 
-        response = [
-            UserResponse.model_validate(user)
-            for user in users
-        ]
+        response = [UserResponse.model_validate(user) for user in users]
 
         await set_cache(
-            cache_key,
-            [
-                user.model_dump(mode="json")
-                for user in response
-            ],
-            expire=300
+            cache_key, [user.model_dump(mode="json") for user in response], expire=300
         )
         return response
 
     @staticmethod
-    async def create_user(
-        user: UserCreate,
-        db: Session,
-        current_user: User
-    ):
+    async def create_user(user: UserCreate, db: Session, current_user: User):
         existing_user = user_repository.get_by_username(db, user.username)
 
         if existing_user:
             raise BadRequestException("Username already exists")
-        
+
         existing_email = user_repository.get_by_email(db, user.email)
-        
+
         if existing_email:
             raise BadRequestException("Email already exists")
 
         new_user = User(
             username=user.username,
             email=user.email,
-            password=hash_password(user.password)
+            password=hash_password(user.password),
         )
 
         await delete_cache_pattern("users:*")
 
         return user_repository.create(db, new_user)
 
-
     @staticmethod
-    async def delete_user(
-        user_id: int,
-        db: Session,
-        current_user: User
-    ):
+    async def delete_user(user_id: int, db: Session, current_user: User):
         user = user_repository.get_by_id(db, user_id)
 
         if user is None:
@@ -96,14 +64,8 @@ class UserService:
         user_repository.delete(db, user)
         await delete_cache_pattern("users:*")
 
-
     @staticmethod
-    async def change_role(
-        user_id: int,
-        role: str,
-        db: Session,
-        current_user: User
-    ):
+    async def change_role(user_id: int, role: str, db: Session, current_user: User):
         user = user_repository.get_by_id(db, user_id)
 
         if user is None:
@@ -117,17 +79,10 @@ class UserService:
 
         await delete_cache_pattern("users:*")
 
-        return {
-            "message": "Role updated",
-            "user": user.username,
-            "role": user.role
-        }
+        return {"message": "Role updated", "user": user.username, "role": user.role}
 
     @staticmethod
-    def make_first_admin(
-        user_id: int,
-        db: Session
-    ):
+    def make_first_admin(user_id: int, db: Session):
         existing_admin = user_repository.get_admin(db)
 
         if existing_admin:
@@ -144,15 +99,12 @@ class UserService:
         return {
             "message": "First admin created",
             "username": user.username,
-            "role": user.role
+            "role": user.role,
         }
 
     @staticmethod
     def reset_password(
-        user_id: int,
-        data: PasswordReset,
-        db: Session,
-        current_user: User
+        user_id: int, data: PasswordReset, db: Session, current_user: User
     ):
 
         user = user_repository.get_by_id(db, user_id)
@@ -160,9 +112,7 @@ class UserService:
         if user is None:
             raise NotFoundException("User not found")
 
-        user.password = hash_password(
-            data.new_password
-        )
+        user.password = hash_password(data.new_password)
 
         user = user_repository.save(db, user)
 

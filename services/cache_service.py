@@ -1,4 +1,5 @@
 import json
+
 from core.redis import redis_client
 
 
@@ -15,11 +16,7 @@ async def set_cache(key: str, data, expire: int = 300):
     if hasattr(data, "model_dump"):
         data = data.model_dump(mode="json")
 
-    await redis_client.set(
-        key,
-        json.dumps(data),
-        ex=expire
-    )
+    await redis_client.set(key, json.dumps(data), ex=expire)
 
 
 async def delete_cache_pattern(pattern: str):

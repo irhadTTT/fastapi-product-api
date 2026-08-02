@@ -9,47 +9,30 @@ from repositories import stock_movement_repository
 from schemas.stock_movement import StockMovementCreate, StockMovementResponse
 from services.stock_movement import StockMovementService
 
-router = APIRouter(
-    prefix="/stock-movements",
-    tags=["Stock Movements"]
-)
+router = APIRouter(prefix="/stock-movements", tags=["Stock Movements"])
+
 
 @router.get("/", response_model=list[StockMovementResponse])
-async def get_stock_movements(
-    db: Session = Depends(get_db)
-):
+async def get_stock_movements(db: Session = Depends(get_db)):
     return await StockMovementService.get_all_stock_movements(db)
 
+
 @router.post(
-    "/",
-    response_model=StockMovementResponse,
-    status_code=status.HTTP_201_CREATED
+    "/", response_model=StockMovementResponse, status_code=status.HTTP_201_CREATED
 )
 async def create_stock_movement(
     data: StockMovementCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     return await StockMovementService.create(db, data, current_user)
 
 
-@router.get(
-    "/product/{product_id}",
-    response_model=list[StockMovementResponse]
-)
-async def get_by_product_id(
-    product_id: int,
-    db: Session = Depends(get_db)
-):
+@router.get("/product/{product_id}", response_model=list[StockMovementResponse])
+async def get_by_product_id(product_id: int, db: Session = Depends(get_db)):
     return await StockMovementService.get_stock_history_product(product_id, db)
 
 
-@router.get(
-    "/user/{user_id}",
-    response_model=list[StockMovementResponse]
-)
-async def get_by_user_id(
-    user_id: int,
-    db: Session = Depends(get_db)
-):
+@router.get("/user/{user_id}", response_model=list[StockMovementResponse])
+async def get_by_user_id(user_id: int, db: Session = Depends(get_db)):
     return await StockMovementService.get_stock_history_user(user_id, db)
