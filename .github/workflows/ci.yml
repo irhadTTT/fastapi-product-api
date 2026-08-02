@@ -15,9 +15,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
-    env:
-      TESTING: "True"
 
     services:
       postgres:
@@ -26,6 +23,7 @@ jobs:
           POSTGRES_USER: fastapi
           POSTGRES_PASSWORD: irhad
           POSTGRES_DB: fastapi_products_test
+          TESTING: "True"
         ports:
           - 5432:5432
         options: >-
@@ -86,11 +84,9 @@ jobs:
         run: |
           ruff format --check .
 
-      - name: Run tests
+      - name: Debug TESTING
         run: |
-          pytest -v
-          - name: Debug TESTING
-            run: echo "TESTING=$TESTING"
+          echo "TESTING=$TESTING"
 
       - name: Run tests
         run: |
