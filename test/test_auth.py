@@ -49,12 +49,12 @@ def test_login_invalid_password(client, db_session):
     assert response.json()["detail"] == "Invalid username or password"
 
 
-def test_register_success(client):
+def test_register_success(client, mock_email_task):
     response = client.post(
         "/auth/register",
         json={"username": "irhad", "email": "irhad@test.com", "password": "irhad123"},
     )
-
+    mock_email_task.assert_called_once()
     assert response.status_code == 201
     assert response.json()["message"] == "User created successfully."
 

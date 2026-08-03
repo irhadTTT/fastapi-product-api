@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -45,3 +47,10 @@ def db_session():
 @pytest.fixture
 def client():
     return TestClient(app)
+
+@pytest.fixture
+def mock_email_task():
+    with patch(
+        "services.auth.send_verification_email_task.delay"
+    ) as mock:
+        yield mock
