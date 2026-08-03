@@ -48,9 +48,8 @@ def db_session():
 def client():
     return TestClient(app)
 
+
 @pytest.fixture
 def mock_email_task():
-    with patch(
-        "services.auth.send_verification_email_task.delay"
-    ) as mock:
+    with patch("services.auth.send_verification_email_task.delay") as mock:
         yield mock
