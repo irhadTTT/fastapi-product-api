@@ -39,6 +39,9 @@ Log levels:
 - WARNING: failed validations, missing resources, unauthorized actions
 - DEBUG: cache hits, cache updates, cache invalidation details
 
+  <img width="1917" height="1057" alt="Screenshot 2026-08-03 220222" src="https://github.com/user-attachments/assets/7d380b26-9e05-40a2-b7df-3f7348091688" />
+
+
 ### Product & Category Management
 * Category management
 * Product CRUD operations
