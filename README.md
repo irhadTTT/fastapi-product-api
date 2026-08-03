@@ -22,6 +22,23 @@ Built with production practices in mind, including centralized exception handlin
 * Authentication rate limiting to prevent brute-force login attempts
 * Admin management capabilities
 
+## Logging
+
+The application uses structured logging.
+
+Logs include:
+* successful requests
+* authentication events
+* database operations
+* cache operations
+* validation errors
+* permission errors
+
+Log levels:
+- INFO: successful operations and important application events
+- WARNING: failed validations, missing resources, unauthorized actions
+- DEBUG: cache hits, cache updates, cache invalidation details
+
 ### Product & Category Management
 * Category management
 * Product CRUD operations

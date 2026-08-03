@@ -31,3 +31,5 @@ async def delete_cache_pattern(pattern: str):
 
     if keys:
         await redis_client.delete(*keys)
+
+    await redis_client.aclose()

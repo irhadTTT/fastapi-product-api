@@ -7,6 +7,7 @@ from core.exception import (
     AppException,
     app_exception_handler,
 )
+from core.middleware import log_requests
 from database import Base, engine
 from limiter import limiter
 from router import auth, category, product, stock_movement, user
@@ -14,6 +15,8 @@ from router import auth, category, product, stock_movement, user
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="StockFlow API project")
+
+app.middleware("http")(log_requests)
 
 app.add_exception_handler(AppException, app_exception_handler)
 

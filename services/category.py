@@ -4,6 +4,7 @@ from core.exception import (
     BadRequestException,
     NotFoundException,
 )
+from core.logging import logger
 from models.category import Category
 from models.user import User
 from repositories import category_repository
@@ -19,9 +20,13 @@ class CategoryService:
         cached = await get_cache(cache_key)
 
         if cached:
+            logger.debug("Categories fetched from cache count=%s", len(cached))
+
             return [CategoryResponse.model_validate(category) for category in cached]
 
         categories = category_repository.get_all(db)
+
+        logger.info("Categories fetched from database count=%s", len(categories))
 
         response = [
             CategoryResponse.model_validate(category) for category in categories
@@ -33,6 +38,8 @@ class CategoryService:
             expire=300,
         )
 
+        logger.debug("Categories cache updated count=%s", len(response))
+
         return response
 
     @staticmethod
@@ -42,13 +49,30 @@ class CategoryService:
         existing_category = category_repository.get_by_name(db, category.name)
 
         if existing_category:
+            logger.warning(
+                "Category creation failed, already exists name=%s user_id=%s",
+                category.name,
+                current_user.id,
+            )
             raise BadRequestException("Category already exists")
 
         new_category = Category(name=category.name)
         created = category_repository.create(db, new_category)
 
+        logger.info(
+            "Category created category_id=%s name=%s created_by=%s",
+            created.id,
+            created.name,
+            current_user.id,
+        )
+
         await delete_cache_pattern("categories:*")
 
+        logger.debug(
+            "Category cache invalidated after creation pattern=%s action=%s",
+            "categories:*",
+            "create",
+        )
         return created
 
     @staticmethod
@@ -56,11 +80,27 @@ class CategoryService:
         category = category_repository.get_by_id(db, category_id)
 
         if not category:
+            logger.warning(
+                "Category not found category_id=%s user_id=%s",
+                category_id,
+                current_user.id,
+            )
             raise NotFoundException("Category not found")
 
         if category.products:
+            logger.warning(
+                "Category deletion blocked because products exist category_id=%s user_id=%s",
+                category.name,
+                current_user.id,
+            )
             raise BadRequestException("Cannot delete category with products")
 
         category_repository.delete(db, category)
 
         await delete_cache_pattern("categories:*")
+
+        logger.debug(
+            "Category cache invalidated after deletion pattern=%s action=%s",
+            "categories:*",
+            "delete",
+        )
