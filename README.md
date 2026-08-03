@@ -70,6 +70,9 @@ Log levels:
 * Dockerized development environment
 * Docker Compose setup for application and database
 
+<img width="1912" height="972" alt="Screenshot 2026-08-02 200041" src="https://github.com/user-attachments/assets/e786196f-63ed-476f-938e-a0b0ef56ca71" />
+<img width="1912" height="971" alt="Screenshot 2026-08-02 200059" src="https://github.com/user-attachments/assets/bc28ada7-17e0-46a9-92bc-090a70e3e33e" />
+
 ### Background Tasks & Async Processing
 * Background Tasks & Async Processing
 * Celery integration for asynchronous background jobs
@@ -78,6 +81,9 @@ Log levels:
 * Background email verification task processing
 * Improved API responsiveness by moving long-running tasks to workers
 * Scalable worker-based task execution architecture
+<img width="1872" height="991" alt="Screenshot 2026-08-03 015904" src="https://github.com/user-attachments/assets/c72032f9-e4a4-42dc-a764-609bd77b7959" />
+<img width="1902" height="1040" alt="Screenshot 2026-08-03 015759" src="https://github.com/user-attachments/assets/3cc27cc3-60a9-4c8a-b460-5385a36e4bc8" />
+
 
 ## Caching & Performance
 - Redis integration for API response caching
@@ -86,17 +92,29 @@ Log levels:
 - Cached frequently accessed resources (Products, Users, Categories, Stock Movements)
 - Automatic cache invalidation support for data updates
 
+<img width="1918" height="1056" alt="Screenshot 2026-08-02 175031" src="https://github.com/user-attachments/assets/e005248b-de76-433c-98f4-79c7ed31e28c" />
+<img width="1893" height="1047" alt="Screenshot 2026-08-02 181926" src="https://github.com/user-attachments/assets/918060d1-7b0e-4c99-8d34-1834368e9576" />
+
+
+
 ### API Documentation & Quality
 * Swagger/OpenAPI interactive documentation
 * Automated testing with Pytest for authentication and category features
 * Code quality improvements with Ruff linting and formatting
-<img width="1895" height="1032" alt="Screenshot 2026-07-31 210242" src="https://github.com/user-attachments/assets/b09d6660-4d64-453c-9caf-6b5a92bce514" />
 
 ### API Quality & CI/CD
 * Automated testing with Pytest
 * CI pipeline for automated checks
 * Code quality checks with Ruff
 * Swagger/OpenAPI documentation
+
+### Testing Strategy 🧪
+* API integration testing with Pytest
+* Integration tests for authentication and category features
+* Test database isolation using a separate test database
+* Mocked Celery background tasks
+* Automated test execution with GitHub Actions CI
+<img width="1895" height="1032" alt="Screenshot 2026-07-31 210242" src="https://github.com/user-attachments/assets/b09d6660-4d64-453c-9caf-6b5a92bce514" />
 
 ## Tech Stack
 
