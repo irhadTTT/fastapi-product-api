@@ -3,7 +3,6 @@ from fastapi.security import OAuth2PasswordRequestForm
 from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
 
-from core.email import send_verification_email
 from core.exception import BadRequestException, UnauthorizedException
 from core.security import create_email_token
 from database import get_db
@@ -39,10 +38,8 @@ async def login(
     summary="Register user",
     description="Register new user",
 )
-def register(
-    user: UserCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)
-):
-    return AuthService.register(user, background_tasks, db)
+async def register(user: UserCreate, db: Session = Depends(get_db)):
+    return await AuthService.register(user, db)
 
 
 @router.get("/me", response_model=UserResponse)

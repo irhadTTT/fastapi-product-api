@@ -1,15 +1,16 @@
-from fastapi import BackgroundTasks, Request
+from fastapi import Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from core.email import send_verification_email
 from core.exception import BadRequestException, UnauthorizedException
 from core.security import create_email_token
+from core.worker.tasks import send_verification_email_task
 from jwt_handler import create_access_token
 from models.user import User
 from repositories import user_repository
 from schemas.user import UserCreate
 from security import hash_password, verify_password
+from services.cache_service import delete_cache_pattern
 
 
 class AuthService:
@@ -29,7 +30,7 @@ class AuthService:
         return {"access_token": access_token, "token_type": "bearer"}
 
     @staticmethod
-    def register(user: UserCreate, background_tasks: BackgroundTasks, db: Session):
+    async def register(user: UserCreate, db: Session):
         existing_user = user_repository.get_by_email(db, user.email)
 
         if existing_user:
@@ -50,6 +51,7 @@ class AuthService:
 
         token = create_email_token(new_user.email)
 
-        background_tasks.add_task(send_verification_email, new_user.email, token)
+        send_verification_email_task.delay(new_user.email, token)
+        await delete_cache_pattern("users:*")
 
         return {"message": "User created successfully."}

@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     MAIL_PORT: int
     FRONTEND_URL: str
     TESTING: bool = False
+    REDIS_URL: str = "redis://redis:6379/0"
 
     class Config:
         env_file = ".env"

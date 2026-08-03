@@ -53,6 +53,15 @@ Built with production practices in mind, including centralized exception handlin
 * Dockerized development environment
 * Docker Compose setup for application and database
 
+### Background Tasks & Async Processing
+* Background Tasks & Async Processing
+* Celery integration for asynchronous background jobs
+* Redis used as Celery message broker and result backend
+* Asynchronous email delivery without blocking API requests
+* Background email verification task processing
+* Improved API responsiveness by moving long-running tasks to workers
+* Scalable worker-based task execution architecture
+
 ## Caching & Performance
 - Redis integration for API response caching
 - Async Redis operations for improved performance
@@ -81,6 +90,10 @@ Built with production practices in mind, including centralized exception handlin
 * Pydantic
 * PostgreSQL
 * Alembic (Database migrations)
+* Background Processing
+* Celery
+* Redis Message Broker
+* Async Task Workers
 
 ### Authentication & Security
 * JWT Authentication
@@ -107,6 +120,9 @@ Built with production practices in mind, including centralized exception handlin
 ### Infrastructure & Documentation
 * Docker
 * Docker Compose
+* Swagger / OpenAPI Documentation
+* Redis container
+* Celery worker process
 * Swagger / OpenAPI Documentation
 
 ## Installation
