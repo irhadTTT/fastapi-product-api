@@ -15,6 +15,9 @@ Built with production practices in mind, including centralized exception handlin
 
 ### Authentication & Authorization
 * JWT-based user authentication
+* Refresh token authentication with token rotation support
+* Secure refresh token storage and validation
+* Refresh token expiration and revocation handling
 * Secure password hashing with bcrypt
 * Email verification system with verification links
 * Role-based authorization (Admin/User)
@@ -135,10 +138,18 @@ Log levels:
 
 ### Authentication & Security
 * JWT Authentication
+* Refresh token authentication
+* Secure refresh token storage and validation
+* Refresh token expiration and revocation handling
 * bcrypt (Password hashing)
 * Role-Based Access Control (RBAC)
 * Authentication rate limiting
 * Protected API routes
+
+<img width="1917" height="982" alt="Screenshot 2026-08-07 222039" src="https://github.com/user-attachments/assets/c9c7dffb-5417-4013-b60c-7df97e1831f7" />
+<img width="1917" height="1013" alt="Screenshot 2026-08-07 222131" src="https://github.com/user-attachments/assets/a007a3b7-678d-4a88-a9a5-db2897e69fa4" />
+<img width="1917" height="996" alt="Screenshot 2026-08-07 222354" src="https://github.com/user-attachments/assets/9d5a4324-a94b-4e8f-b71b-a9d738d87c4b" />
+
 
 ### Architecture & Development
 * Service Layer Architecture
