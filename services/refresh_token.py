@@ -24,7 +24,8 @@ class RefreshTokenService:
         db_refresh_token = RefreshToken(
             token=token,
             user_id=user_id,
-            expires_at=datetime.now(timezone.utc) + timedelta(days=30),
+            expires_at=datetime.now(timezone.utc).replace(tzinfo=None)
+            + timedelta(days=30),
         )
 
         token = refresh_token_repository.create(db, db_refresh_token)
@@ -50,7 +51,13 @@ class RefreshTokenService:
 
         if cached:
             logger.debug("Refresh token fetched from cached_id=%s", cached["id"])
-            return cached
+            return RefreshToken(
+                id=cached["id"],
+                token=cached["token"],
+                user_id=cached["user_id"],
+                expires_at=datetime.fromisoformat(cached["expires_at"]),
+                revoked=cached["revoked"],
+            )
 
         token = refresh_token_repository.get_by_token(db, token)
 
@@ -88,7 +95,7 @@ class RefreshTokenService:
             logger.warning("Token revoked=%s", token)
             raise UnauthorizedException("Refresh token has been revoked")
 
-        if refresh_token.expires_at < datetime.now(timezone.utc):
+        if refresh_token.expires_at < datetime.now(timezone.utc).replace(tzinfo=None):
             logger.warning("Token expired=%s", token)
             raise UnauthorizedException("Refresh token has expired")
 
