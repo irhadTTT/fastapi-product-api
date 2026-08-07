@@ -6,6 +6,7 @@ from sqlalchemy import create_engine, engine_from_config, pool
 
 from database import Base
 from models import category, product, user
+from models.refresh_token import RefreshToken
 from models.stock_movement import StockMovement
 
 # this is the Alembic Config object, which provides

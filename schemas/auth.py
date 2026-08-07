@@ -8,3 +8,7 @@ class LoginRequest(BaseModel):
 
 class PasswordReset(BaseModel):
     new_password: str
+
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str

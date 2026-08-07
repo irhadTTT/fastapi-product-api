@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from fastapi import Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -12,6 +14,7 @@ from repositories import user_repository
 from schemas.user import UserCreate
 from security import hash_password, verify_password
 from services.cache_service import delete_cache_pattern
+from services.refresh_token import RefreshTokenService
 
 
 class AuthService:
@@ -32,13 +35,19 @@ class AuthService:
             data={"sub": str(user.id), "role": user.role}
         )
 
+        refresh_token = await RefreshTokenService.save_refresh_token(db, user.id)
+
         logger.info(
             "User logged in successfully user_id=%s username=%s",
             user.id,
             user.username,
         )
 
-        return {"access_token": access_token, "token_type": "bearer"}
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_token.token,
+            "token_type": "bearer",
+        }
 
     @staticmethod
     async def register(user: UserCreate, db: Session):
