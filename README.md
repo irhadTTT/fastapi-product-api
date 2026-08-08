@@ -1,14 +1,86 @@
 # StockFlow API 🚀
 
-A scalable inventory management REST API built with FastAPI, PostgreSQL, SQLAlchemy, Alembic and Docker.
+A scalable inventory management REST API built with with FastAPI, PostgreSQL, SQLAlchemy, Alembic, Redis, Celery and Docker.
 
-StockFlow is a backend system designed with a clean layered architecture using Routers, Services and Repository patterns. It provides secure user authentication, role-based access control, product and category management, inventory tracking and stock movement history.
+StockFlow is a backend system designed with a clean layered architecture using Routers, Services and Repository patterns. It provides secure user authentication, role-based access control, product and category management, inventory tracking and stock movement history,caching and asynchronous background processing.
 
 The API includes email verification, protected resources, advanced product searching, filtering, sorting, pagination, image management and database migration support.
 
 Built with production practices in mind, including centralized exception handling, validation, automated code quality checks and a Dockerized development environment.
 
 ---
+```text
+🌐 Live Deployment
+
+Production API
+
+[https://stokflow-api-0odr.onrender.com](https://stokflow-api-0odr.onrender.com)
+
+Swagger UI
+
+[https://stokflow-api-0odr.onrender.com/docs](https://stokflow-api-0odr.onrender.com/docs)
+
+ReDoc
+
+[https://stokflow-api-0odr.onrender.com/redoc](https://stokflow-api-0odr.onrender.com/redoc)
+
+Production Infrastructure
+Component	       |    Service
+API	                  Render
+Database	        Neon PostgreSQL
+Redis	               Upstash Redis
+Containerization	    Docker
+CI/CD	              GitHub Actions
+API Documentation	  Swagger / OpenAPI
+
+The production API runs on a Render Free Web Service.
+
+PostgreSQL is hosted on Neon, while Redis is provided by Upstash.
+
+<img width="1916" height="980" alt="Screenshot 2026-08-08 040500" src="https://github.com/user-attachments/assets/2cce80e2-4f63-472f-90e2-1233d85cafca" />
+
+☁️ Production Deployment
+
+The API is deployed using the following architecture:
+
+                     Internet
+                        │
+                        ▼
+              ┌──────────────────┐
+              │      Render      │
+              │   FastAPI API    │
+              │     Docker       │
+              └────────┬─────────┘
+                       │
+              ┌────────┴────────┐
+              │                 │
+              ▼                 ▼
+     ┌────────────────┐  ┌────────────────┐
+     │ Neon PostgreSQL│  │ Upstash Redis  │
+     │                │  │                │
+     │ Production DB  │  │ Cache / Celery │
+     └────────────────┘  │ infrastructure │
+
+
+Production services
+
+Render
+
+Hosts the Dockerized FastAPI application.
+
+Neon
+
+Provides the production PostgreSQL database.
+
+Upstash
+
+Provides the production Redis instance used by the application and Celery configuration.
+
+GitHub Actions
+
+Runs automated tests and code-quality checks.
+
+```
 
 ## Features 🚀
 
@@ -24,6 +96,7 @@ Built with production practices in mind, including centralized exception handlin
 * Protected user-specific resources
 * Authentication rate limiting to prevent brute-force login attempts
 * Admin management capabilities
+* Admin user management
 
 ## Logging
 
@@ -90,6 +163,18 @@ Log levels:
 <img width="1872" height="991" alt="Screenshot 2026-08-03 015904" src="https://github.com/user-attachments/assets/c72032f9-e4a4-42dc-a764-609bd77b7959" />
 <img width="1902" height="1040" alt="Screenshot 2026-08-03 015759" src="https://github.com/user-attachments/assets/3cc27cc3-60a9-4c8a-b460-5385a36e4bc8" />
 
+The application integrates Celery for asynchronous background processing.
+
+Redis is used as:
+
+Celery message broker
+Celery result backend
+
+Background tasks include operations such as asynchronous email processing and email verification.
+This prevents long-running operations from blocking API requests and provides a worker-based architecture that can be scaled independently.
+
+Celery is fully integrated into the application and Docker development environment. The current production deployment uses the Render Free Web Service; a separate paid Render Background Worker is not required for the current deployment.
+
 
 ## Caching & Performance
 - Redis integration for API response caching
@@ -97,6 +182,7 @@ Log levels:
 - Cache management with configurable expiration times (TTL)
 - Cached frequently accessed resources (Products, Users, Categories, Stock Movements)
 - Automatic cache invalidation support for data updates
+- Redis is provided in production by Upstash Redis.
 
 <img width="1918" height="1056" alt="Screenshot 2026-08-02 175031" src="https://github.com/user-attachments/assets/e005248b-de76-433c-98f4-79c7ed31e28c" />
 <img width="1893" height="1047" alt="Screenshot 2026-08-02 181926" src="https://github.com/user-attachments/assets/918060d1-7b0e-4c99-8d34-1834368e9576" />
@@ -162,37 +248,62 @@ Log levels:
 * Image validation and management
 * Email verification system
 
-### Testing & Code Quality
-* Pytest
-* Ruff (Linting and Formatting)
+🧪 Testing
 
-### Infrastructure & Documentation
-* Docker
-* Docker Compose
-* Swagger / OpenAPI Documentation
-* Redis container
-* Celery worker process
-* Swagger / OpenAPI Documentation
+Testing is implemented with Pytest.
 
-## Installation
+The test suite covers areas including:
 
-### Clone repository
+* Authentication
+* Users
+* Products
+* Categories
+* Stock movements
 
-git clone ...
+Testing also includes:
 
-### Start services
+* API integration tests
+* Test database isolation
+* Mocked background tasks
+* Authentication scenarios
+* Authorization scenarios
 
-docker compose up --build
+Run tests locally:
 
-## Database migrations
+pytest
 
-alembic upgrade head
+🧹 Code Quality
 
-## API Documentation
+The project uses Ruff for linting and formatting.
 
-Open:
+Check code:
 
-http://localhost:8000/docs
+ruff check .
+
+Check formatting:
+
+ruff format --check .
+
+Format code:
+
+ruff format .
+
+🔄 CI/CD
+
+GitHub Actions is used for automated quality checks.
+
+The CI pipeline performs automated checks such as:
+
+Push / Pull Request
+       │
+       ▼
+GitHub Actions
+       │
+       ├── Pytest
+       │
+       └── Ruff
+
+This ensures that tests and code-quality checks are executed automatically before changes are considered complete.
 
 ## Admin account (development)
 ```text
@@ -208,6 +319,60 @@ Password: admin123
 
 - FastAPI container
 - PostgreSQL container
+- redis
+
+🐳 Docker
+
+The application includes a Dockerfile for containerized deployment.
+
+Example:
+
+FROM python:3.14
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+Docker Compose is used for local development and can orchestrate the application and supporting services.
+
+
+🧩 Design Patterns
+
+The project uses several backend design practices:
+
+Router Layer
+
+Responsible for:
+
+* HTTP requests
+* HTTP responses
+* Dependency injection
+* Endpoint definitions
+* Service Layer
+
+Responsible for:
+
+* Business logic
+* Authentication
+* Authorization
+* Inventory rules
+* Cache handling
+* Background task coordination
+* Repository Layer
+
+Responsible for:
+
+* Database access
+* CRUD operations
+* Query execution
+
+Repositories do not contain business logic.
 
 
 ## 🗄️ Database
@@ -537,24 +702,6 @@ MAIL_PORT=587
 # Frontend redirect URL after email verification
 FRONTEND_URL=https://your-frontend-url.com
 ```
-
-
-# 📖 API Documentation
-
-FastAPI automatically provides interactive documentation.
-
-Swagger UI:
-
-```text
-http://127.0.0.1:8000/docs
-```
-
-ReDoc:
-
-```text
-http://127.0.0.1:8000/redoc
-```
-
 ---
 
 # 🔌 API Endpoints
@@ -660,13 +807,15 @@ Each stock movement contains:
 
 ## 🚀 Future Improvements
 
-Possible improvements:
-
-- Refresh token implementation
-- Cloud deployment
-- Automated test coverage improvements
-- Database optimization and indexing
-
+Expand automated test coverage
+Add more comprehensive integration tests
+Add database indexes based on production query analysis
+Add monitoring and application metrics
+Add production Celery worker deployment
+Add a frontend application
+Add advanced inventory reporting
+Improve observability and distributed logging
+Add automated production deployment workflows
 ---
 
 # 👨‍💻 Author
