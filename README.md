@@ -9,20 +9,13 @@ The API includes email verification, protected resources, advanced product searc
 Built with production practices in mind, including centralized exception handling, validation, automated code quality checks and a Dockerized development environment.
 
 ---
-```text
-🌐 Live Deployment
 
+🌐 Live Deployment
 Production API
 
-[https://stokflow-api-0odr.onrender.com](https://stokflow-api-0odr.onrender.com)
-
-Swagger UI
-
-[https://stokflow-api-0odr.onrender.com/docs](https://stokflow-api-0odr.onrender.com/docs)
-
-ReDoc
-
-[https://stokflow-api-0odr.onrender.com/redoc](https://stokflow-api-0odr.onrender.com/redoc)
+API: https://stokflow-api-0odr.onrender.com<br>
+Swagger UI: https://stokflow-api-0odr.onrender.com/docs<br>
+ReDoc: https://stokflow-api-0odr.onrender.com/redoc<br>
 
 Production Infrastructure
 Component	       |    Service
@@ -37,7 +30,10 @@ The production API runs on a Render Free Web Service.
 
 PostgreSQL is hosted on Neon, while Redis is provided by Upstash.
 
-<img width="1916" height="980" alt="Screenshot 2026-08-08 040500" src="https://github.com/user-attachments/assets/2cce80e2-4f63-472f-90e2-1233d85cafca" />
+<img width="1916" height="980" alt="Screenshot 2026-08-08 040500" src="https://github.com/user-attachments/assets/5cc1f6cc-6f6a-483c-bd88-c04152592b17" />
+
+
+
 
 ☁️ Production Deployment
 
@@ -80,7 +76,6 @@ GitHub Actions
 
 Runs automated tests and code-quality checks.
 
-```
 
 ## Features 🚀
 
