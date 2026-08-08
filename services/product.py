@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from core.exception import BadRequestException, ForbiddenException, NotFoundException
 from core.logging import logger
+from core.metrics import cache_hits, cache_misses
 from enums.sort import SortField, SortOrder, UserRole
 from models.product import Item
 from models.user import User
@@ -63,8 +64,11 @@ class ProductService:
         cached = await get_cache(cache_key)
 
         if cached:
+            cache_hits.labels(resource="products").inc()
             logger.debug("Products fetched from cache count=%s", len(cached))
             return ProductsResponse(**cached)
+
+        cache_misses.labels(resource="products").inc()
 
         query = db.query(Item)
 

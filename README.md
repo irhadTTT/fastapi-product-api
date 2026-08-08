@@ -184,6 +184,36 @@ Celery is fully integrated into the application and Docker development environme
 <img width="1893" height="1047" alt="Screenshot 2026-08-02 181926" src="https://github.com/user-attachments/assets/918060d1-7b0e-4c99-8d34-1834368e9576" />
 
 
+📊 Monitoring & Observability
+
+StockFlow exposes application and infrastructure metrics using Prometheus and provides a monitoring dashboard through Grafana.
+
+Prometheus collects metrics from the FastAPI /metrics endpoint, while Grafana is used to visualize application performance and business metrics.
+
+Monitored Metrics
+* HTTP request rate and request counts
+* HTTP request latency
+* Process and memory metrics
+* Cache hit and miss rates
+* Stock movement metrics (IN / OUT)
+* Python runtime and garbage collection metrics
+* Monitoring Architecture
+
+FastAPI
+   │
+   │ /metrics
+   ▼
+Prometheus
+   │
+   │ PromQL
+   ▼
+Grafana Dashboard
+
+Prometheus and Grafana are included in the Docker Compose development environment.
+
+Prometheus scrapes the API metrics every 15 seconds, while Grafana provides dashboards for monitoring API performance, caching behavior and inventory activity.
+
+
 
 ### API Documentation & Quality
 * Swagger/OpenAPI interactive documentation

@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from core.exception import BadRequestException, NotFoundException
 from core.logging import logger
+from core.metrics import stock_movements
 from enums.stock_movement_type import StockMovementType
 from models.product import Item
 from models.stock_movement import StockMovement
@@ -65,6 +66,8 @@ class StockMovementService:
         stock_movement_repository.create(db, movement)
         db.commit()
         db.refresh(movement)
+
+        stock_movements.labels(type=data.type.value).inc()
 
         logger.info(
             "Stock movement created for product_id=%s created_by=%s",

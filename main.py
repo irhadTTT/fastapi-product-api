@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from prometheus_fastapi_instrumentator import Instrumentator
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
@@ -15,6 +16,8 @@ from router import auth, category, product, refresh_token, stock_movement, user
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="StockFlow API project")
+
+Instrumentator().instrument(app).expose(app)
 
 app.middleware("http")(log_requests)
 
