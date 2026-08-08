@@ -13,9 +13,10 @@ Built with production practices in mind, including centralized exception handlin
 🌐 Live Deployment
 Production API
 
-API: https://stokflow-api-0odr.onrender.com<br>
 Swagger UI: https://stokflow-api-0odr.onrender.com/docs<br>
 ReDoc: https://stokflow-api-0odr.onrender.com/redoc<br>
+API: https://stokflow-api-0odr.onrender.com<br>
+
 
 Production Infrastructure
 Component	       |    Service
@@ -787,30 +788,17 @@ Each stock movement contains:
 
 ---
 
-# 🔄 Request Flow
-
-1. Client sends an HTTP request.
-2. FastAPI Router receives the request.
-3. Pydantic Schemas validate request data.
-4. Service Layer handles business logic and application rules.
-5. Repository Layer manages database operations.
-6. SQLAlchemy ORM communicates with PostgreSQL database.
-7. Database returns the requested data.
-8. Service Layer processes the result.
-9. FastAPI returns a JSON response to the client.
----
-
 ## 🚀 Future Improvements
 
-Expand automated test coverage
-Add more comprehensive integration tests
-Add database indexes based on production query analysis
-Add monitoring and application metrics
-Add production Celery worker deployment
-Add a frontend application
-Add advanced inventory reporting
-Improve observability and distributed logging
-Add automated production deployment workflows
+1. Expand automated test coverage <br>
+2. Add more comprehensive integration tests<br>
+3. Add database indexes based on production query analysis<br>
+4. Add monitoring and application metrics<br>
+5. Add production Celery worker deployment<br>
+6. Add a frontend application<br>
+7. Add advanced inventory reporting<br>
+8. Improve observability and distributed logging<br>
+9. Add automated production deployment workflows<br>
 ---
 
 # 👨‍💻 Author
