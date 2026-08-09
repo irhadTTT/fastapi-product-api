@@ -24,7 +24,7 @@ class InventoryReportService:
 
         logger.info("Inventory report fetched from database")
 
-        response = InventoryReportResponse.model_validate(inventory_report._mapping)
+        response = InventoryReportResponse.model_validate(inventory_report)
 
         await set_cache(
             cache_key,
