@@ -11,7 +11,15 @@ from core.exception import (
 from core.middleware import log_requests
 from database import Base, engine
 from limiter import limiter
-from router import auth, category, product, refresh_token, stock_movement, user
+from router import (
+    auth,
+    category,
+    inventory_report,
+    product,
+    refresh_token,
+    stock_movement,
+    user,
+)
 
 Base.metadata.create_all(bind=engine)
 
@@ -32,6 +40,7 @@ app.include_router(auth.router)
 app.include_router(category.router)
 app.include_router(stock_movement.router)
 app.include_router(refresh_token.router)
+app.include_router(inventory_report.router)
 
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 

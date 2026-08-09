@@ -4,9 +4,11 @@ A scalable inventory management REST API built with with FastAPI, PostgreSQL, SQ
 
 StockFlow is a backend system designed with a clean layered architecture using Routers, Services and Repository patterns. It provides secure user authentication, role-based access control, product and category management, inventory tracking and stock movement history,caching and asynchronous background processing.
 
-The API includes email verification, protected resources, advanced product searching, filtering, sorting, pagination, image management and database migration support.
+The API includes email verification, protected resources, advanced product search, filtering, sorting, pagination, image management and inventory reporting with database-level aggregations.
 
-Built with production practices in mind, including centralized exception handling, validation, automated code quality checks and a Dockerized development environment.
+Built with production-oriented practices including centralized exception handling, structured logging, database migrations, automated testing, CI/CD, rate limiting, Prometheus metrics and Grafana monitoring.
+
+The application is containerized with Docker and deployed to production using Render, Neon PostgreSQL and Upstash Redis.
 
 ---
 
@@ -182,6 +184,16 @@ Celery is fully integrated into the application and Docker development environme
 
 <img width="1918" height="1056" alt="Screenshot 2026-08-02 175031" src="https://github.com/user-attachments/assets/e005248b-de76-433c-98f4-79c7ed31e28c" />
 <img width="1893" height="1047" alt="Screenshot 2026-08-02 181926" src="https://github.com/user-attachments/assets/918060d1-7b0e-4c99-8d34-1834368e9576" />
+
+
+### Inventory Reporting & Analytics
+
+- Inventory summary reporting
+- Total product and stock unit calculations
+- Low-stock and out-of-stock product detection
+- Total inventory value calculation
+- Configurable low-stock threshold
+- Database-level aggregation using SQLAlchemy
 
 
 📊 Monitoring & Observability
