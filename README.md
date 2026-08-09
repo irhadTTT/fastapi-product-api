@@ -185,6 +185,7 @@ Celery is fully integrated into the application and Docker development environme
 <img width="1918" height="1056" alt="Screenshot 2026-08-02 175031" src="https://github.com/user-attachments/assets/e005248b-de76-433c-98f4-79c7ed31e28c" />
 <img width="1893" height="1047" alt="Screenshot 2026-08-02 181926" src="https://github.com/user-attachments/assets/918060d1-7b0e-4c99-8d34-1834368e9576" />
 
+<br>
 
 ### Inventory Reporting & Analytics
 
@@ -211,6 +212,8 @@ Monitored Metrics
 * Python runtime and garbage collection metrics
 * Monitoring Architecture
 
+```text
+
 FastAPI
    │
    │ /metrics
@@ -221,9 +224,16 @@ Prometheus
    ▼
 Grafana Dashboard
 
+```
+
 Prometheus and Grafana are included in the Docker Compose development environment.
 
 Prometheus scrapes the API metrics every 15 seconds, while Grafana provides dashboards for monitoring API performance, caching behavior and inventory activity.
+
+<img width="1911" height="966" alt="Screenshot 2026-08-08 174013" src="https://github.com/user-attachments/assets/8b5fb1b5-c5a0-46fe-8160-058f9d6ea6fa" />
+
+<img width="1915" height="967" alt="Screenshot 2026-08-08 175828" src="https://github.com/user-attachments/assets/aa98d58e-a79e-40ea-ba03-fb0fffb12be0" />
+
 
 
 
@@ -332,6 +342,7 @@ GitHub Actions is used for automated quality checks.
 
 The CI pipeline performs automated checks such as:
 
+```text
 Push / Pull Request
        │
        ▼
@@ -340,6 +351,7 @@ GitHub Actions
        ├── Pytest
        │
        └── Ruff
+```
 
 This ensures that tests and code-quality checks are executed automatically before changes are considered complete.
 
