@@ -7,7 +7,7 @@ from database import Base
 class Category(Base):
     __tablename__ = "categories"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String, unique=True, nullable=False)
 
     products = relationship("Item", back_populates="category")

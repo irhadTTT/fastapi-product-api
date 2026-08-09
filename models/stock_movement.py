@@ -9,13 +9,13 @@ from enums.stock_movement_type import StockMovementType
 class StockMovement(Base):
     __tablename__ = "stock_movements"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
 
-    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False, index=True)
 
     product = relationship("Item", back_populates="stock_movements")
 
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
 
     user = relationship("User", back_populates="stock_movements")
 
