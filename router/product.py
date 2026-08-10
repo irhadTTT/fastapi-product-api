@@ -50,14 +50,14 @@ def get_item(
     current_user: User = Depends(get_current_user),
 ):
 
-    return ProductService.get_item(db, item_id, current_user)
+    return ProductService.get_item(item_id, db, current_user)
 
 
 @router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_item(
     item_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin),
+    current_user: User = Depends(get_current_user),
 ):
     await ProductService.delete_item(item_id, db, current_user)
 
@@ -67,7 +67,7 @@ async def update_item(
     item_id: int,
     item: ItemUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin),
+    current_user: User = Depends(get_current_user),
 ):
     return await ProductService.update_item(item_id, item, db, current_user)
 

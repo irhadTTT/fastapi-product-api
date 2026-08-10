@@ -122,7 +122,7 @@ class ProductService:
     @staticmethod
     def get_item(item_id: int, db: Session, current_user: User):
 
-        item = product_repository.get_by_id(item_id, db)
+        item = product_repository.get_by_id(db, item_id)
 
         if item is None:
             logger.warning(

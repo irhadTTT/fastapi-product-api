@@ -7,6 +7,8 @@ from sqlalchemy.orm import sessionmaker
 
 from database import Base, get_db
 from main import app, limiter
+from models.user import User
+from security import hash_password
 
 limiter.enabled = False
 
@@ -53,3 +55,66 @@ def client():
 def mock_email_task():
     with patch("services.auth.send_verification_email_task.delay") as mock:
         yield mock
+
+
+@pytest.fixture
+def auth_headers(client, db_session):
+    user = User(
+        username="testuser",
+        email="testuser@test.com",
+        password=hash_password("testuser"),
+        role="user",
+    )
+
+    db_session.add(user)
+    db_session.commit()
+
+    login_response = client.post(
+        "/auth/login", data={"username": "testuser", "password": "testuser"}
+    )
+
+    token = login_response.json()["access_token"]
+
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def admin_auth_headers(client, db_session):
+    admin = User(
+        username="admin_test",
+        email="admin_test@test.com",
+        password=hash_password("admin_test"),
+        role="admin",
+    )
+
+    db_session.add(admin)
+    db_session.commit()
+
+    login_response = client.post(
+        "/auth/login", data={"username": "admin_test", "password": "admin_test"}
+    )
+
+    token = login_response.json()["access_token"]
+
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def other_user(db_session):
+    user = User(
+        username="otheruser",
+        email="other@test.com",
+        password=hash_password("otheruser"),
+        role="user",
+    )
+
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+
+    return user
+
+
+@pytest.fixture
+def current_user(db_session):
+    return db_session.query(User).filter(User.username == "testuser").first()
