@@ -106,11 +106,11 @@ def get_all_products(client, db_session):
 
     assert data[1]["name"] == "TestProduct2"
     assert data[1]["price"] == 200
-    assert data[0]["category_id"] == 1
+    assert data[1]["category_id"] == 1
 
     assert data[2]["name"] == "TestProduct3"
     assert data[2]["price"] == 300
-    assert data[0]["category_id"] == 1
+    assert data[2]["category_id"] == 1
 
 
 def get_product(client, db_session, auth_headers):

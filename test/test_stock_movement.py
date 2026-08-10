@@ -75,7 +75,7 @@ def test_create_stock_movement_out_insufficient_stock(
         "/stock-movements",
         json={
             "product_id": product.id,
-            "type": "OUT",
+            "type": StockMovementType.OUT,
             "quantity": 10,
             "note": "Too much stock",
         },
@@ -104,7 +104,7 @@ def test_create_stock_movement_invalid_quantity(
         "/stock-movements",
         json={
             "product_id": product.id,
-            "type": "IN",
+            "type": StockMovementType.IN,
             "quantity": 0,
             "note": "Invalid quantity",
         },
@@ -123,7 +123,7 @@ def test_create_stock_movement_product_not_found(
         "/stock-movements",
         json={
             "product_id": 999999,
-            "type": "IN",
+            "type": StockMovementType.IN,
             "quantity": 10,
             "note": "Missing product",
         },
@@ -132,3 +132,50 @@ def test_create_stock_movement_product_not_found(
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Product not found"
+
+
+def get_all_stock_movements(client, auth_headers, db_session, current_user):
+    product1 = Item(name="TestProduct1", price=100, stock_quantity=10)
+
+    db_session.add(product1)
+    db_session.commit()
+    db_session.refresh(product1)
+
+    stock_movement_in = StockMovement(
+        product_id=product1.id,
+        user_id=current_user.id,
+        type=StockMovementType.IN,
+        quantity=20,
+        note="New products",
+    )
+
+    stock_movement_out = StockMovement(
+        product_id=product1.id,
+        user_id=current_user.id,
+        type=StockMovementType.OUT,
+        quantity=10,
+        note="Out products",
+    )
+
+    db_session.add_all([stock_movement_in, stock_movement_out])
+    db_session.commit()
+
+    response = client.get("/stock-movements", headers=auth_headers)
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert len(data) == 2
+
+    assert data[0]["product_id"] == product1.id
+    assert data[0]["user_id"] == current_user.id
+    assert data[0]["type"] == "IN"
+    assert data[0]["quantity"] == 20
+    assert data[0]["note"] == "New products"
+
+    assert data[1]["product_id"] == product1.id
+    assert data[1]["user_id"] == current_user.id
+    assert data[1]["type"] == "OUT"
+    assert data[1]["quantity"] == 10
+    assert data[1]["note"] == "Out products"
