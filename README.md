@@ -1,4 +1,5 @@
-# StockFlow API 🚀
+# StockFlow API 🚀 
+[![codecov](https://codecov.io/gh/irhadTTT/fastapi-product-api/graph/badge.svg)](https://codecov.io/gh/irhadTTT/fastapi-product-api)
 
 A scalable inventory management REST API built with with FastAPI, PostgreSQL, SQLAlchemy, Alembic, Redis, Celery and Docker.
 
