@@ -86,5 +86,5 @@ jobs:
           alembic -c alembic.ini upgrade head
 
       
-      - name: Run tests
-        run: pytest -v
+      - name: Run tests with coverage
+        run: pytest -v --cov=. --cov-report=term-missing --cov-report=xml
