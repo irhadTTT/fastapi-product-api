@@ -255,7 +255,8 @@ Prometheus scrapes the API metrics every 15 seconds, while Grafana provides dash
 * Test database isolation using a separate test database
 * Mocked Celery background tasks
 * Automated test execution with GitHub Actions CI
-<img width="1895" height="1032" alt="Screenshot 2026-07-31 210242" src="https://github.com/user-attachments/assets/b09d6660-4d64-453c-9caf-6b5a92bce514" />
+<img width="1917" height="1017" alt="Screenshot 2026-08-10 213031" src="https://github.com/user-attachments/assets/88a6e593-9246-4dac-8456-69e1dac479c7" />
+
 
 ## Tech Stack
 
