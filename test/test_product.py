@@ -1,5 +1,9 @@
+import pytest
+
+from enums.sort import SortField, SortOrder
 from models.category import Category
 from models.product import Item
+from services.product import ProductService
 
 
 def test_create_product(client, auth_headers):
@@ -111,6 +115,325 @@ def get_all_products(client, db_session):
     assert data[2]["name"] == "TestProduct3"
     assert data[2]["price"] == 300
     assert data[2]["category_id"] == 1
+
+
+@pytest.mark.asyncio
+async def test_get_items_cache_miss_with_filters(monkeypatch, db_session, other_user):
+    cache_data = {}
+
+    async def mock_get_cache(key):
+        return None
+
+    async def mock_set_cache(key, value, expire):
+        cache_data["key"] = key
+        cache_data["value"] = value
+        cache_data["expire"] = expire
+
+    monkeypatch.setattr(
+        "services.product.get_cache",
+        mock_get_cache,
+    )
+
+    monkeypatch.setattr(
+        "services.product.set_cache",
+        mock_set_cache,
+    )
+
+    result = await ProductService.get_items(
+        db_session,
+        q="phone",
+        min_price=10,
+        max_price=1000,
+        sort_by=SortField.price,
+        order=SortOrder.desc,
+        page=1,
+        limit=10,
+        current_user=other_user,
+    )
+
+    assert result.page == 1
+    assert result.limit == 10
+    assert cache_data["expire"] == 300
+
+
+@pytest.mark.asyncio
+async def test_get_items_sort_by_created_at(db_session, other_user):
+    result = await ProductService.get_items(
+        db_session,
+        q=None,
+        min_price=None,
+        max_price=None,
+        sort_by=SortField.created_at,
+        order=SortOrder.desc,
+        page=1,
+        limit=10,
+        current_user=other_user,
+    )
+
+    assert result.page == 1
+    assert result.limit == 10
+
+
+@pytest.mark.asyncio
+async def test_get_items_sort_by_name(db_session, other_user):
+    result = await ProductService.get_items(
+        db_session,
+        q=None,
+        min_price=None,
+        max_price=None,
+        sort_by=SortField.name,
+        order=SortOrder.asc,
+        page=1,
+        limit=10,
+        current_user=other_user,
+    )
+
+    assert result.page == 1
+    assert result.limit == 10
+
+
+@pytest.mark.asyncio
+async def test_get_items_from_cache(monkeypatch, db_session, other_user):
+    cached_data = {
+        "products": [],
+        "page": 1,
+        "limit": 10,
+        "total": 0,
+        "total_pages": 0,
+    }
+
+    async def mock_get_cache(key):
+        return cached_data
+
+    async def mock_set_cache(key, value, expire):
+        pass
+
+    monkeypatch.setattr(
+        "services.product.get_cache",
+        mock_get_cache,
+    )
+
+    monkeypatch.setattr(
+        "services.product.set_cache",
+        mock_set_cache,
+    )
+
+    result = await ProductService.get_items(
+        db_session,
+        q=None,
+        min_price=None,
+        max_price=None,
+        sort_by=None,
+        order=None,
+        page=1,
+        limit=10,
+        current_user=other_user,
+    )
+
+    assert result.page == 1
+    assert result.limit == 10
+    assert result.total == 0
+    assert result.total_pages == 0
+    assert result.products == []
+
+
+@pytest.mark.asyncio
+async def test_get_items_admin_with_filters(db_session, admin_user):
+    admin_user.role = "admin"
+    db_session.commit()
+
+    product1 = Item(
+        name="iPhone",
+        price=500,
+        owner_id=admin_user.id,
+    )
+
+    product2 = Item(
+        name="Laptop",
+        price=1500,
+        owner_id=admin_user.id,
+    )
+
+    db_session.add_all([product1, product2])
+    db_session.commit()
+
+    result = await ProductService.get_items(
+        db_session,
+        q="phone",
+        min_price=100,
+        max_price=1000,
+        sort_by=SortField.price,
+        order=SortOrder.desc,
+        page=1,
+        limit=10,
+        current_user=admin_user,
+    )
+
+    assert result.total == 1
+    assert result.products[0].name == "iPhone"
+
+
+@pytest.mark.asyncio
+async def test_get_items_with_all_filters(db_session, other_user, monkeypatch):
+    async def mock_get_cache(key):
+        return None
+
+    async def mock_set_cache(key, value, expire):
+        pass
+
+    monkeypatch.setattr(
+        "services.product.get_cache",
+        mock_get_cache,
+    )
+
+    monkeypatch.setattr(
+        "services.product.set_cache",
+        mock_set_cache,
+    )
+
+    product1 = Item(name="iPhone 16", price=1000, owner_id=other_user.id)
+
+    product2 = Item(name="Samsung Galaxy", price=1500, owner_id=other_user.id)
+
+    product3 = Item(name="iPhone 15", price=500, owner_id=other_user.id)
+
+    db_session.add_all([product1, product2, product3])
+    db_session.commit()
+
+    result = await ProductService.get_items(
+        db=db_session,
+        q="iPhone",
+        min_price=600,
+        max_price=1200,
+        sort_by=SortField.price,
+        order=SortOrder.asc,
+        page=1,
+        limit=10,
+        current_user=other_user,
+    )
+
+    assert result.total == 1
+    assert len(result.products) == 1
+    assert result.products[0].name == "iPhone 16"
+    assert result.products[0].price == 1000
+
+
+@pytest.mark.asyncio
+async def test_get_items_pagination(
+    db_session,
+    other_user,
+    monkeypatch,
+):
+    async def mock_get_cache(key):
+        return None
+
+    async def mock_set_cache(key, value, expire):
+        pass
+
+    monkeypatch.setattr("services.product.get_cache", mock_get_cache)
+    monkeypatch.setattr("services.product.set_cache", mock_set_cache)
+
+    products = [
+        Item(name=f"Product {i}", price=100 + i, owner_id=other_user.id)
+        for i in range(1, 6)
+    ]
+
+    db_session.add_all(products)
+    db_session.commit()
+
+    result = await ProductService.get_items(
+        db=db_session,
+        q=None,
+        min_price=None,
+        max_price=None,
+        sort_by=None,
+        order=None,
+        page=2,
+        limit=2,
+        current_user=other_user,
+    )
+
+    assert result.page == 2
+    assert result.limit == 2
+    assert result.total == 5
+    assert result.total_pages == 3
+    assert len(result.products) == 2
+
+
+@pytest.mark.asyncio
+async def test_get_items_sort_by_price_desc(
+    db_session,
+    other_user,
+    monkeypatch,
+):
+    async def mock_get_cache(key):
+        return None
+
+    async def mock_set_cache(key, value, expire):
+        pass
+
+    monkeypatch.setattr("services.product.get_cache", mock_get_cache)
+    monkeypatch.setattr("services.product.set_cache", mock_set_cache)
+
+    product1 = Item(name="Cheap Product", price=100, owner_id=other_user.id)
+
+    product2 = Item(name="Expensive Product", price=500, owner_id=other_user.id)
+
+    db_session.add_all([product1, product2])
+    db_session.commit()
+
+    result = await ProductService.get_items(
+        db=db_session,
+        q=None,
+        min_price=None,
+        max_price=None,
+        sort_by=SortField.price,
+        order=SortOrder.desc,
+        page=1,
+        limit=10,
+        current_user=other_user,
+    )
+
+    assert result.products[0].name == "Expensive Product"
+    assert result.products[1].name == "Cheap Product"
+
+
+@pytest.mark.asyncio
+async def test_get_items_sort_by_name_desc(
+    db_session,
+    other_user,
+    monkeypatch,
+):
+    async def mock_get_cache(key):
+        return None
+
+    async def mock_set_cache(key, value, expire):
+        pass
+
+    monkeypatch.setattr("services.product.get_cache", mock_get_cache)
+    monkeypatch.setattr("services.product.set_cache", mock_set_cache)
+
+    product1 = Item(name="Apple", price=100, owner_id=other_user.id)
+
+    product2 = Item(name="Samsung", price=200, owner_id=other_user.id)
+
+    db_session.add_all([product1, product2])
+    db_session.commit()
+
+    result = await ProductService.get_items(
+        db=db_session,
+        q=None,
+        min_price=None,
+        max_price=None,
+        sort_by=SortField.name,
+        order=SortOrder.desc,
+        page=1,
+        limit=10,
+        current_user=other_user,
+    )
+
+    assert result.products[0].name == "Samsung"
+    assert result.products[1].name == "Apple"
 
 
 def get_product(client, db_session, auth_headers):

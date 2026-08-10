@@ -47,4 +47,4 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 @app.get("/health")
 def health_check():
-    return {"status": "ok", "service": "FastAPI Product API"}
+    return {"status": "ok", "service": "StockflowAPI Project"}

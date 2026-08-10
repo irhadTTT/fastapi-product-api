@@ -1,9 +1,15 @@
+from datetime import datetime, timezone
+
+import pytest
+
 from enums.stock_movement_type import StockMovementType
 from models.product import Item
 from models.stock_movement import StockMovement
+from services.stock_movement import StockMovementService
 
 
-def test_create_stock_movement_in(client, auth_headers, current_user, db_session):
+@pytest.mark.asyncio
+async def test_create_stock_movement_in(client, auth_headers, current_user, db_session):
     product1 = Item(name="TestProduct1", price=100, stock_quantity=10)
 
     db_session.add(product1)
@@ -24,7 +30,7 @@ def test_create_stock_movement_in(client, auth_headers, current_user, db_session
     assert response.status_code == 201
     assert response.json()["product_id"] == product1.id
     assert response.json()["user_id"] == current_user.id
-    assert response.json()["type"] == "IN"
+    assert response.json()["type"] == StockMovementType.IN
     assert response.json()["quantity"] == 20
     assert response.json()["note"] == "This is test"
 
@@ -32,7 +38,8 @@ def test_create_stock_movement_in(client, auth_headers, current_user, db_session
     assert product1.stock_quantity == 30
 
 
-def test_create_stock_movement_out(
+@pytest.mark.asyncio
+async def test_create_stock_movement_out(
     client,
     auth_headers,
     db_session,
@@ -60,7 +67,8 @@ def test_create_stock_movement_out(
     assert product.stock_quantity == 30
 
 
-def test_create_stock_movement_out_insufficient_stock(
+@pytest.mark.asyncio
+async def test_create_stock_movement_out_insufficient_stock(
     client,
     auth_headers,
     db_session,
@@ -89,7 +97,8 @@ def test_create_stock_movement_out_insufficient_stock(
     assert product.stock_quantity == 5
 
 
-def test_create_stock_movement_invalid_quantity(
+@pytest.mark.asyncio
+async def test_create_stock_movement_invalid_quantity(
     client,
     auth_headers,
     db_session,
@@ -134,7 +143,8 @@ def test_create_stock_movement_product_not_found(
     assert response.json()["detail"] == "Product not found"
 
 
-def get_all_stock_movements(client, auth_headers, db_session, current_user):
+@pytest.mark.asyncio
+async def test_get_all_stock_movements(client, auth_headers, db_session, current_user):
     product1 = Item(name="TestProduct1", price=100, stock_quantity=10)
 
     db_session.add(product1)
@@ -170,7 +180,7 @@ def get_all_stock_movements(client, auth_headers, db_session, current_user):
 
     assert data[0]["product_id"] == product1.id
     assert data[0]["user_id"] == current_user.id
-    assert data[0]["type"] == "IN"
+    assert data[0]["type"] == StockMovementType.IN
     assert data[0]["quantity"] == 20
     assert data[0]["note"] == "New products"
 
@@ -179,3 +189,305 @@ def get_all_stock_movements(client, auth_headers, db_session, current_user):
     assert data[1]["type"] == "OUT"
     assert data[1]["quantity"] == 10
     assert data[1]["note"] == "Out products"
+
+
+@pytest.mark.asyncio
+async def test_get_stock_movement_per_user(
+    client, auth_headers, db_session, current_user
+):
+    product = Item(
+        name="TestProduct",
+        price=100,
+        stock_quantity=20,
+    )
+
+    db_session.add(product)
+    db_session.commit()
+    db_session.refresh(product)
+
+    movement = StockMovement(
+        product_id=product.id,
+        user_id=current_user.id,
+        type=StockMovementType.IN,
+        quantity=10,
+        note="Test movement",
+    )
+
+    db_session.add(movement)
+    db_session.commit()
+    db_session.refresh(movement)
+
+    response = client.get(
+        f"/stock-movements/user/{current_user.id}",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert len(data) == 1
+
+    assert data[0]["product_id"] == product.id
+    assert data[0]["user_id"] == current_user.id
+    assert data[0]["type"] == StockMovementType.IN
+    assert data[0]["quantity"] == 10
+    assert data[0]["note"] == "Test movement"
+
+
+@pytest.mark.asyncio
+async def test_get_stock_history_user_from_cache(monkeypatch, db_session):
+    cached_movements = [
+        {
+            "id": 1,
+            "product_id": 1,
+            "user_id": 5,
+            "quantity": 10,
+            "type": StockMovementType.IN,
+            "created_at": datetime.now(timezone.utc),
+        }
+    ]
+
+    async def mock_get_cache(key):
+        return cached_movements
+
+    # ovdje koristim kao funkciju da privremeno promijenim ponasanje neke funkcije koju testiram
+    # u stvari laziram Redis
+    monkeypatch.setattr(
+        "services.stock_movement.get_cache",
+        mock_get_cache,
+    )
+
+    def mock_get_by_user_id(db, user_id):
+        pytest.fail("Repository should not be called when cache exists")
+
+    monkeypatch.setattr(
+        "services.stock_movement.stock_movement_repository.get_by_user_id",
+        mock_get_by_user_id,
+    )
+
+    result = await StockMovementService.get_stock_history_user(5, db_session)
+
+    assert len(result) == 1
+    assert result[0].id == 1
+
+
+@pytest.mark.asyncio
+async def test_get_stock_history_user_cache_miss(
+    monkeypatch, db_session, stock_movement
+):
+    async def mock_get_cache(key):
+        return None
+
+    cache_data = {}
+
+    async def mock_set_cache(key, value, expire):
+        cache_data["key"] = key
+        cache_data["value"] = value
+        cache_data["expire"] = expire
+
+    monkeypatch.setattr(
+        "services.stock_movement.get_cache",
+        mock_get_cache,
+    )
+
+    monkeypatch.setattr(
+        "services.stock_movement.set_cache",
+        mock_set_cache,
+    )
+
+    def mock_get_by_user_id(db, user_id):
+        return [stock_movement]
+
+    monkeypatch.setattr(
+        "services.stock_movement.stock_movement_repository.get_by_user_id",
+        mock_get_by_user_id,
+    )
+
+    result = await StockMovementService.get_stock_history_user(5, db_session)
+
+    assert len(result) == 1
+    assert cache_data["key"] == "stock_movements:user:5"
+    assert cache_data["expire"] == 300
+
+
+@pytest.mark.asyncio
+async def test_get_stock_history_user_empty(monkeypatch, db_session):
+    async def mock_get_cache(key):
+        return None
+
+    def mock_get_by_user_id(db, user_id):
+        return []
+
+    async def mock_set_cache(key, value, expire):
+        pass
+
+    monkeypatch.setattr(
+        "services.stock_movement.get_cache",
+        mock_get_cache,
+    )
+
+    monkeypatch.setattr(
+        "services.stock_movement.set_cache",
+        mock_set_cache,
+    )
+
+    monkeypatch.setattr(
+        "services.stock_movement.stock_movement_repository.get_by_user_id",
+        mock_get_by_user_id,
+    )
+
+    result = await StockMovementService.get_stock_history_user(999, db_session)
+
+    assert result == []
+
+
+@pytest.mark.asyncio
+async def test_get_stock_movement_per_product(
+    client, auth_headers, db_session, current_user
+):
+    product = Item(
+        name="TestProduct",
+        price=100,
+        stock_quantity=20,
+    )
+
+    db_session.add(product)
+    db_session.commit()
+    db_session.refresh(product)
+
+    movement = StockMovement(
+        product_id=product.id,
+        user_id=current_user.id,
+        type=StockMovementType.IN,
+        quantity=10,
+        note="Test movement",
+    )
+
+    db_session.add(movement)
+    db_session.commit()
+    db_session.refresh(movement)
+
+    response = client.get(
+        f"/stock-movements/product/{product.id}",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert len(data) == 1
+
+    assert data[0]["product_id"] == product.id
+    assert data[0]["user_id"] == current_user.id
+    assert data[0]["type"] == StockMovementType.IN
+    assert data[0]["quantity"] == 10
+    assert data[0]["note"] == "Test movement"
+
+
+@pytest.mark.asyncio
+async def test_get_stock_history_product_from_cache(monkeypatch, db_session):
+    cached_movements = [
+        {
+            "id": 1,
+            "product_id": 1,
+            "user_id": 5,
+            "quantity": 10,
+            "type": StockMovementType.IN,
+            "created_at": datetime.now(timezone.utc),
+        }
+    ]
+
+    async def mock_get_cache(key):
+        return cached_movements
+
+    # ovdje koristim kao funkciju da privremeno promijenim ponasanje neke funkcije koju testiram
+    # u stvari laziram Redis
+    monkeypatch.setattr(
+        "services.stock_movement.get_cache",
+        mock_get_cache,
+    )
+
+    def mock_get_by_product_id(db, product_id):
+        pytest.fail("Repository should not be called when cache exists")
+
+    monkeypatch.setattr(
+        "services.stock_movement.stock_movement_repository.get_by_product_id",
+        mock_get_by_product_id,
+    )
+
+    result = await StockMovementService.get_stock_history_product(5, db_session)
+
+    assert len(result) == 1
+    assert result[0].id == 1
+
+
+@pytest.mark.asyncio
+async def test_get_stock_history_product_cache_miss(
+    monkeypatch, db_session, stock_movement
+):
+    async def mock_get_cache(key):
+        return None
+
+    cache_data = {}
+
+    async def mock_set_cache(key, value, expire):
+        cache_data["key"] = key
+        cache_data["value"] = value
+        cache_data["expire"] = expire
+
+    monkeypatch.setattr(
+        "services.stock_movement.get_cache",
+        mock_get_cache,
+    )
+
+    monkeypatch.setattr(
+        "services.stock_movement.set_cache",
+        mock_set_cache,
+    )
+
+    def mock_get_by_product_id(db, product_id):
+        return [stock_movement]
+
+    monkeypatch.setattr(
+        "services.stock_movement.stock_movement_repository.get_by_product_id",
+        mock_get_by_product_id,
+    )
+
+    result = await StockMovementService.get_stock_history_product(5, db_session)
+
+    assert len(result) == 1
+    assert cache_data["key"] == "stock_movements:product:5"
+    assert cache_data["expire"] == 300
+
+
+@pytest.mark.asyncio
+async def test_get_stock_history_product_empty(monkeypatch, db_session):
+    async def mock_get_cache(key):
+        return None
+
+    def mock_get_by_product_id(db, prodcut_id):
+        return []
+
+    async def mock_set_cache(key, value, expire):
+        pass
+
+    monkeypatch.setattr(
+        "services.stock_movement.get_cache",
+        mock_get_cache,
+    )
+
+    monkeypatch.setattr(
+        "services.stock_movement.set_cache",
+        mock_set_cache,
+    )
+
+    monkeypatch.setattr(
+        "services.stock_movement.stock_movement_repository.get_by_product_id",
+        mock_get_by_product_id,
+    )
+
+    result = await StockMovementService.get_stock_history_user(999, db_session)
+
+    assert result == []

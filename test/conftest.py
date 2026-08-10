@@ -6,7 +6,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from database import Base, get_db
+from enums.stock_movement_type import StockMovementType
 from main import app, limiter
+from models.stock_movement import StockMovement
 from models.user import User
 from security import hash_password
 
@@ -118,3 +120,35 @@ def other_user(db_session):
 @pytest.fixture
 def current_user(db_session):
     return db_session.query(User).filter(User.username == "testuser").first()
+
+
+@pytest.fixture
+def stock_movement(db_session):
+    movement = StockMovement(
+        product_id=1,
+        user_id=1,
+        quantity=10,
+        type=StockMovementType.IN,
+    )
+
+    db_session.add(movement)
+    db_session.commit()
+    db_session.refresh(movement)
+
+    return movement
+
+
+@pytest.fixture
+def admin_user(db_session):
+    admin = User(
+        username="admin_service_test",
+        email="admin_service_test@test.com",
+        password=hash_password("admin_service_test"),
+        role="admin",
+    )
+
+    db_session.add(admin)
+    db_session.commit()
+    db_session.refresh(admin)
+
+    return admin
