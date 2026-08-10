@@ -1,3 +1,7 @@
+import csv
+from io import BytesIO, StringIO
+
+from openpyxl import Workbook
 from sqlalchemy.orm import Session
 
 from core.logging import logger
@@ -35,3 +39,80 @@ class InventoryReportService:
         logger.debug("Inventory report cache updated")
 
         return response
+
+    @staticmethod
+    async def export_inventory_report(
+        db: Session,
+        low_stock_threshold: int = 10,
+    ):
+        report = await InventoryReportService.get_inventory_summary(
+            db,
+            low_stock_threshold,
+        )
+
+        output = StringIO()
+        writer = csv.writer(output)
+
+        writer.writerow(
+            [
+                "Total Products",
+                "Total Stock Units",
+                "Low Stock Products",
+                "Out Of Stock Products",
+                "Inventory Value",
+            ]
+        )
+
+        writer.writerow(
+            [
+                report.total_products,
+                report.total_stock_units,
+                report.low_stock_products,
+                report.out_of_stock_products,
+                report.inventory_value,
+            ]
+        )
+
+        output.seek(0)
+
+        return output
+
+    @staticmethod
+    async def export_inventory_report_excel(
+        db: Session,
+        low_stock_threshold: int = 10,
+    ):
+        report = await InventoryReportService.get_inventory_summary(
+            db,
+            low_stock_threshold,
+        )
+
+        workbook = Workbook()
+        worksheet = workbook.active
+        worksheet.title = "Inventory Report"
+
+        worksheet.append(
+            [
+                "Total Products",
+                "Total Stock Units",
+                "Low Stock Products",
+                "Out Of Stock Products",
+                "Inventory Value",
+            ]
+        )
+
+        worksheet.append(
+            [
+                report.total_products,
+                report.total_stock_units,
+                report.low_stock_products,
+                report.out_of_stock_products,
+                report.inventory_value,
+            ]
+        )
+
+        output = BytesIO()
+        workbook.save(output)
+        output.seek(0)
+
+        return output

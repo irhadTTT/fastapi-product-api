@@ -134,6 +134,13 @@ Log levels:
 * Protected stock operations with role-based permissions
 * Inventory transaction records with notes and timestamps
 
+### Reporting & Export
+
+* Inventory reporting with aggregated stock metrics
+* CSV inventory report export
+* Excel (`.xlsx`) inventory report export
+* Timestamped export filenames
+
 ### Architecture & Backend Design
 * Layered architecture with Router, Service and Repository layers
 * Repository Pattern for database operations
