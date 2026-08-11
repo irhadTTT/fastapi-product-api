@@ -24,7 +24,10 @@ async def test_create_stock_movement_in(client, auth_headers, current_user, db_s
             "quantity": 20,
             "note": "This is test",
         },
-        headers=auth_headers,
+        headers={
+            **auth_headers,
+            "Idempotency-Key": "test_stock_in_1",
+        },
     )
 
     assert response.status_code == 201
@@ -58,12 +61,53 @@ async def test_create_stock_movement_out(
             "quantity": 20,
             "note": "Stock outgoing",
         },
-        headers=auth_headers,
+        headers={
+            **auth_headers,
+            "Idempotency-Key": "test_stock_out_1",
+        },
     )
 
     assert response.status_code == 201
 
     db_session.refresh(product)
+    assert product.stock_quantity == 30
+
+
+@pytest.mark.asyncio
+async def test_create_stock_movement_idempotency(client, auth_headers, db_session):
+    product = Item(
+        name="TestProduct",
+        price=100,
+        stock_quantity=50,
+    )
+
+    db_session.add(product)
+    db_session.commit()
+    db_session.refresh(product)
+
+    headers = {
+        **auth_headers,
+        "Idempotency-Key": "test_stock_idempotency_1",
+    }
+
+    data = {
+        "product_id": product.id,
+        "type": StockMovementType.OUT,
+        "quantity": 20,
+        "note": "Stock outgoing",
+    }
+
+    first_response = client.post("/stock-movements", json=data, headers=headers)
+
+    second_response = client.post("/stock-movements", json=data, headers=headers)
+
+    assert first_response.status_code == 201
+    assert second_response.status_code == 201
+
+    assert first_response.json()["id"] == second_response.json()["id"]
+
+    db_session.refresh(product)
+
     assert product.stock_quantity == 30
 
 
@@ -87,7 +131,10 @@ async def test_create_stock_movement_out_insufficient_stock(
             "quantity": 10,
             "note": "Too much stock",
         },
-        headers=auth_headers,
+        headers={
+            **auth_headers,
+            "Idempotency-Key": "test_invalid_quantity_out_1",
+        },
     )
 
     assert response.status_code == 400
@@ -117,7 +164,7 @@ async def test_create_stock_movement_invalid_quantity(
             "quantity": 0,
             "note": "Invalid quantity",
         },
-        headers=auth_headers,
+        headers={**auth_headers, "Idempotency-Key": "test_invalid_quantity_IN_1"},
     )
 
     assert response.status_code == 400
@@ -136,7 +183,7 @@ def test_create_stock_movement_product_not_found(
             "quantity": 10,
             "note": "Missing product",
         },
-        headers=auth_headers,
+        headers={**auth_headers, "Idempotency-Key": "test_product_not_found_1"},
     )
 
     assert response.status_code == 404

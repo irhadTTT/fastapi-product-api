@@ -117,6 +117,14 @@ Log levels:
   <img width="1917" height="1057" alt="Screenshot 2026-08-03 220222" src="https://github.com/user-attachments/assets/7d380b26-9e05-40a2-b7df-3f7348091688" />
 
 
+### Reliability & Error Handling
+
+* Centralized exception handling for application and unexpected errors
+* Graceful handling of unhandled exceptions with structured logging
+* Idempotency protection for stock movement creation
+* Prevents duplicate stock movements when the same `Idempotency-Key` is reused
+
+
 ### Product & Category Management
 * Category management
 * Product CRUD operations

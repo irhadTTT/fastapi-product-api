@@ -1,14 +1,19 @@
-from fastapi import HTTPException, status
+from fastapi import Header, HTTPException, status
 from sqlalchemy.orm import Session
 
 from core.exception import BadRequestException, NotFoundException
 from core.logging import logger
 from core.metrics import stock_movements
 from enums.stock_movement_type import StockMovementType
+from models.idempotency_key import IdempotencyKey
 from models.product import Item
 from models.stock_movement import StockMovement
 from models.user import User
-from repositories import product_repository, stock_movement_repository
+from repositories import (
+    idempotency_repository,
+    product_repository,
+    stock_movement_repository,
+)
 from schemas.stock_movement import StockMovementCreate, StockMovementResponse
 from services.cache_service import delete_cache_pattern, get_cache, set_cache
 
@@ -16,8 +21,21 @@ from services.cache_service import delete_cache_pattern, get_cache, set_cache
 class StockMovementService:
     @staticmethod
     async def create(
-        db: Session, data: StockMovementCreate, current_user: User
+        db: Session, data: StockMovementCreate, current_user: User, idempotency_key: str
     ) -> StockMovement:
+
+        existing_key = idempotency_repository.get_by_key(db, idempotency_key)
+
+        if existing_key:
+            logger.info(
+                "Duplicate stock movement request ignored "
+                "idempotency_key=%s user_id=%s",
+                idempotency_key,
+                current_user.id,
+            )
+            return stock_movement_repository.get_by_id(
+                db, existing_key.stock_movement_id
+            )
 
         product = product_repository.get_by_id(db, data.product_id)
 
@@ -64,6 +82,15 @@ class StockMovementService:
         )
 
         stock_movement_repository.create(db, movement)
+
+        db.flush()
+
+        idempotency_key = IdempotencyKey(
+            key=idempotency_key, user_id=current_user.id, stock_movement_id=movement.id
+        )
+
+        db.add(idempotency_key)
+
         db.commit()
         db.refresh(movement)
 

@@ -32,6 +32,17 @@ services:
       - postgres
       - redis
 
+  celery:
+    build: .
+    container_name: stockflow-celery
+    command: celery -A core.worker.celery.celery worker --loglevel=info
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      
   prometheus:
     image: prom/prometheus:latest
     container_name: stockflow-prometheus

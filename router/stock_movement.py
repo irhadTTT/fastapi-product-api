@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Header, status
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -18,14 +18,17 @@ async def get_stock_movements(db: Session = Depends(get_db)):
 
 
 @router.post(
-    "/", response_model=StockMovementResponse, status_code=status.HTTP_201_CREATED
+    "/",
+    response_model=StockMovementResponse,
+    status_code=status.HTTP_201_CREATED,
 )
 async def create_stock_movement(
     data: StockMovementCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
+    idempotency_key: str = Header(..., alias="Idempotency-Key"),
 ):
-    return await StockMovementService.create(db, data, current_user)
+    return await StockMovementService.create(db, data, current_user, idempotency_key)
 
 
 @router.get("/product/{product_id}", response_model=list[StockMovementResponse])

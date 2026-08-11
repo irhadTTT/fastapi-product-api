@@ -7,6 +7,7 @@ from slowapi.errors import RateLimitExceeded
 from core.exception import (
     AppException,
     app_exception_handler,
+    unhandled_exception_handler,
 )
 from core.middleware import log_requests
 from database import Base, engine
@@ -30,6 +31,7 @@ Instrumentator().instrument(app).expose(app)
 app.middleware("http")(log_requests)
 
 app.add_exception_handler(AppException, app_exception_handler)
+app.add_exception_handler(Exception, unhandled_exception_handler)
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
