@@ -123,6 +123,7 @@ Log levels:
 * Graceful handling of unhandled exceptions with structured logging
 * Idempotency protection for stock movement creation
 * Prevents duplicate stock movements when the same `Idempotency-Key` is reused
+<img width="1916" height="962" alt="Screenshot 2026-08-11 033044" src="https://github.com/user-attachments/assets/8522374f-d086-4ca4-885a-a971c7c375db" />
 
 
 ### Product & Category Management
