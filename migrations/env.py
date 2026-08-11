@@ -8,6 +8,7 @@ from database import Base
 from models import category, product, user
 from models.refresh_token import RefreshToken
 from models.stock_movement import StockMovement
+from models.idempotency_key import IdempotencyKey
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
