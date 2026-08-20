@@ -11,6 +11,8 @@ Built with production-oriented practices including centralized exception handlin
 
 The application is containerized with Docker and deployed to production using Render, Neon PostgreSQL and Upstash Redis.
 
+A React + TypeScript frontend is currently being developed to provide a web-based interface for authentication, dashboard management and inventory operations. The frontend currently includes login/logout functionality, dashboard navigation, product management and a reusable application layout with header and sidebar components.
+
 ---
 
 🌐 Live Deployment
@@ -79,6 +81,47 @@ Provides the production Redis instance used by the application and Celery config
 GitHub Actions
 
 Runs automated tests and code-quality checks.
+
+
+---
+
+## 🖥️ React Frontend
+
+A modern React frontend is currently being developed for StockFlow, providing a user-friendly interface on top of the existing FastAPI backend.
+
+### Current Frontend Features
+
+- React + TypeScript
+- React Router
+- Authentication flow with login/logout
+- Protected routes
+- Dashboard
+- Products management
+- Product search and filtering
+- Product deletion with clear destructive-action feedback
+- Empty-state and "No products found" messages
+- Responsive application layout
+- Sidebar navigation
+- Header navigation
+- Reusable components
+- API integration with the StockFlow backend
+
+The frontend is being developed as a separate application inside the `frontend/` directory while the existing production API remains available through the deployed Swagger/OpenAPI interface.
+
+### Frontend Stack
+
+- React
+- TypeScript
+- React Router
+- Vite
+- Tailwind CSS
+
+> 🚧 The React frontend is currently under active development.
+
+<img width="1913" height="1019" alt="Screenshot 2026-08-20 055024" src="https://github.com/user-attachments/assets/15fb6509-2306-425f-b204-272a8f5f4f88" />
+<img width="1917" height="940" alt="Screenshot 2026-08-20 055819" src="https://github.com/user-attachments/assets/f81d8169-7f90-43ef-9061-2c1ac27691bd" />
+<img width="1917" height="988" alt="Screenshot 2026-08-20 055341" src="https://github.com/user-attachments/assets/0a1015f3-3be4-4e63-81d7-6726b35f6d4a" />
+
 
 
 ## Features 🚀
@@ -863,9 +906,7 @@ Each stock movement contains:
 ## 🚀 Future Improvements
 
 1. Production Celery worker deployment<br>
-2. Advanced inventory reporting<br>
-3. Improved distributed logging and observability<br>
-4. Frontend application<br>
+2. Improved distributed logging and observability<br>
 ---
 
 # 👨‍💻 Author
