@@ -10,6 +10,7 @@ function Header() {
     "/inventory": "Inventory",
     "/categories": "Categories",
     "/reports": "Reports",
+    "/users": "Users"
   };
 
   const pageTitle = pageTitles[location.pathname] ?? "StockFlow";

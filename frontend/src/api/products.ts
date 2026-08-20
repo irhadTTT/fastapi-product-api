@@ -80,3 +80,7 @@ export function deleteProduct(id: number) {
     method: "DELETE",
   });
 }
+
+export function getAllProducts() {
+  return apiFetch<Product[]>("/products/all");
+}

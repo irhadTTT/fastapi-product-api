@@ -367,7 +367,7 @@ function Products() {
                                                 </td>
 
                                                 <td className="px-6 py-4 text-slate-600">
-                                                    {product.price} $
+                                                    {product.price} €
                                                 </td>
 
                                                 <td className="px-6 py-4 text-slate-600">

@@ -8,6 +8,7 @@ import Products from "./pages/Products";
 import Inventory from "./pages/Inventory";
 import Categories from "./pages/Categories";
 import Reports from "./pages/Reports";
+import Users from "./pages/Users";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/users" element={<Users />} />
           </Route>
         </Route>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

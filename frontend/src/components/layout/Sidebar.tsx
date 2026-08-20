@@ -23,7 +23,8 @@ function Sidebar() {
         { name: "Products", path: "/products" },
         { name: "Inventory", path: "/inventory" },
         { name: "Categories", path: "/categories" },
-        { name: "Reports", path: "/reports" }
+        { name: "Reports", path: "/reports" },
+        { name: "Users", path: "/users" }
     ];
 
     return (
