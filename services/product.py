@@ -96,9 +96,9 @@ class ProductService:
                 query = query.order_by(Item.name.asc())
         elif sort_by == SortField.created_at:
             if order == SortOrder.desc:
-                query = query.order_by(Item.created_at.desc())
+                query = query.order_by(Item.created_at.desc().nullslast())
             else:
-                query = query.order_by(Item.created_at.asc())
+                query = query.order_by(Item.created_at.asc().nullslast())
 
         skip = (page - 1) * limit
         total = query.count()
