@@ -122,6 +122,8 @@ The frontend is being developed as a separate application inside the `frontend/`
 <img width="1917" height="940" alt="Screenshot 2026-08-20 055819" src="https://github.com/user-attachments/assets/f81d8169-7f90-43ef-9061-2c1ac27691bd" />
 <img width="1917" height="988" alt="Screenshot 2026-08-20 055341" src="https://github.com/user-attachments/assets/0a1015f3-3be4-4e63-81d7-6726b35f6d4a" />
 
+<img width="1919" height="1023" alt="Screenshot 2026-08-20 212305" src="https://github.com/user-attachments/assets/e5397876-bed2-442c-a066-9e3bae5fbb00" />
+<img width="1919" height="1021" alt="Screenshot 2026-08-20 194844" src="https://github.com/user-attachments/assets/3599fc30-6af4-474f-9ef8-7f74f1162083" />
 
 
 ## Features 🚀
