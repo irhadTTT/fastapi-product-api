@@ -71,3 +71,42 @@ export async function apiFetch<T>(
 
     return response.json();
 }
+
+
+export async function downloadReport(endpoint: string) {
+  const token = getAccessToken();
+
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    headers: {
+      ...(token
+        ? {
+            Authorization: `Bearer ${token}`,
+          }
+        : {}),
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to download report: ${response.status}`);
+  }
+
+  const blob = await response.blob();
+
+  const url = window.URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+
+  const contentDisposition = response.headers.get("Content-Disposition");
+
+  const fileName = contentDisposition?.match(/filename=([^;]+)/)?.[1] ?? "download";
+
+  console.log("Content-Disposition:", response.headers.get("Content-Disposition"));
+
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+
+  link.remove();
+  window.URL.revokeObjectURL(url);
+}

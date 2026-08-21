@@ -1,4 +1,4 @@
-import { apiFetch } from "./api";
+import { apiFetch, downloadReport } from "./api";
 
 export interface InventoryReport {
   total_products: number;
@@ -10,4 +10,16 @@ export interface InventoryReport {
 
 export function getReport() {
   return apiFetch<InventoryReport>("/reports/");
+}
+
+export function exportInventoryCsv() {
+  return downloadReport(
+    "/reports/export/csv"
+  );
+}
+
+export function exportInventoryExcel() {
+  return downloadReport(
+    "/reports/report/export"
+  );
 }
