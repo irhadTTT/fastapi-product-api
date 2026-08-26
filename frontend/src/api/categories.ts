@@ -9,8 +9,21 @@ export interface CreateCategoryRequest {
   name: string;
 }
 
-export function getCategories() {
-  return apiFetch<Category[]>("/categories/");
+export interface CategoriesResponse {
+  categories: Category[];
+  page: number;
+  limit: number;
+  total: number;
+  total_pages: number;
+}
+
+export function getCategories(
+  page: number =1, 
+  limit: number = 10
+) {
+  return apiFetch<CategoriesResponse>(
+      `/categories/?page=${page}&limit=${limit}`
+    );
 }
 
 export function deleteCategory(id: number) {

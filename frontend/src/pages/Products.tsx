@@ -18,8 +18,11 @@ function Products() {
     const [categoryId, setCategoryId] = useState("");
     const [creating, setCreating] = useState(false);
     const [success, setSuccess] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const pageSize = 10;
 
-    function loadProducts() {
+    function loadProducts(page = currentPage) {
         setLoading(true);
         setError(null);
 
@@ -33,9 +36,13 @@ function Products() {
                 : undefined,
             sort_by: sortBy,
             order: order,
+            page,
+            limit: pageSize,
         })
             .then((data) => {
                 setProducts(data.products);
+                setCurrentPage(data.page);
+                setTotalPages(data.total_pages);
             })
             .catch((error) => {
                 setError(error.message);
@@ -51,6 +58,7 @@ function Products() {
         setMaxPrice("");
         setSortBy("name");
         setOrder("asc");
+        setCurrentPage(1);
 
         getProducts({
             q: undefined,
@@ -58,9 +66,13 @@ function Products() {
             max_price: undefined,
             sort_by: "name",
             order: "asc",
+            page: 1,
+            limit: pageSize,
         })
             .then((data) => {
                 setProducts(data.products);
+                setCurrentPage(data.page);
+                setTotalPages(data.total_pages);
             })
             .catch((error) => {
                 setError(error.message);
@@ -279,7 +291,10 @@ function Products() {
                 </select>
 
                 <button
-                    onClick={loadProducts}
+                    onClick={() => {
+                        setCurrentPage(1);
+                        loadProducts(1);
+                    }}
                     className="rounded-lg bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700"
                 >
                     Search
@@ -402,6 +417,32 @@ function Products() {
                                     })}
                                 </tbody>
                             </table>
+
+                            <div className="mt-4 flex items-center justify-between rounded-lg bg-white px-4 py-3 shadow-sm">
+                                <button
+                                    onClick={() => {
+                                        loadProducts(currentPage - 1);
+                                    }}
+                                    disabled={currentPage === 1 || loading}
+                                    className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    Previous
+                                </button>
+
+                                <span className="text-sm text-slate-600">
+                                    Page {currentPage} of {totalPages}
+                                </span>
+
+                                <button
+                                    onClick={() => {
+                                        loadProducts(currentPage + 1);
+                                    }}
+                                    disabled={currentPage === totalPages || loading}
+                                    className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    Next
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}

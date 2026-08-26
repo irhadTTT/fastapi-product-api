@@ -29,6 +29,8 @@ export interface ProductFilters {
     max_price?: number;
     sort_by?: "price" | "name" | "created_at";
     order?: "asc" | "desc";
+    page?: number;
+    limit?: number;
 }
 
 export function getProducts(filters: ProductFilters = {}) {
@@ -54,6 +56,14 @@ export function getProducts(filters: ProductFilters = {}) {
         params.append("order", filters.order);
     }
 
+    if (filters.page !== undefined) {
+        params.append("page", filters.page.toString());
+    }
+
+    if (filters.limit !== undefined) {
+        params.append("limit", filters.limit.toString());
+    }
+
     const query = params.toString();
 
     return apiFetch<ProductsResponse>(
@@ -63,24 +73,24 @@ export function getProducts(filters: ProductFilters = {}) {
 
 
 export interface CreateProductRequest {
-  name: string;
-  price: number;
-  category_id?: number | null;
+    name: string;
+    price: number;
+    category_id?: number | null;
 }
 
 export function createProduct(data: CreateProductRequest) {
-  return apiFetch<Product>("/products/", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
+    return apiFetch<Product>("/products/", {
+        method: "POST",
+        body: JSON.stringify(data),
+    });
 }
 
 export function deleteProduct(id: number) {
-  return apiFetch<void>(`/products/${id}`, {
-    method: "DELETE",
-  });
+    return apiFetch<void>(`/products/${id}`, {
+        method: "DELETE",
+    });
 }
 
 export function getAllProducts() {
-  return apiFetch<Product[]>("/products/all");
+    return apiFetch<Product[]>("/products/all");
 }

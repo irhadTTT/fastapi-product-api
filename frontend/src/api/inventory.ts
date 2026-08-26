@@ -1,15 +1,5 @@
 import { apiFetch } from "./api";
 
-export interface InventoryItem {
-  id: number;
-  product_id: number;
-  quantity: number;
-}
-
-export function getInventory() {
-  return apiFetch<InventoryItem[]>("/inventory");
-}
-
 
 export interface StockMovement {
   id: number;
@@ -25,8 +15,21 @@ export interface StockMovement {
   created_at: string;
 }
 
-export function getStockMovements() {
-  return apiFetch<StockMovement[]>("/stock-movements/");
+export interface StockMovementsResponse {
+  movements: StockMovement[];
+  page: number;
+  limit: number;
+  total: number;
+  total_pages: number;
+}
+
+export function getStockMovements(
+  page: number = 1, 
+  limit: number = 10
+) {
+  return apiFetch<StockMovementsResponse>(
+    `/stock-movements/?page=${page}&limit=${limit}`
+  );
 }
 
 export interface CreateStockMovementRequest {

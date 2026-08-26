@@ -4,7 +4,7 @@ import {
   createStockMovement,
   getStockMovementsByProduct,
   getStockMovementsByUser,
-  type StockMovement,
+  type StockMovement
 } from "../api/inventory";
 
 import {
@@ -33,6 +33,10 @@ export default function Inventory() {
   const [filterLoading, setFilterLoading] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<number | "">("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const pageSize = 10;
 
   useEffect(() => {
     getAllProducts()
@@ -40,11 +44,22 @@ export default function Inventory() {
       .catch(() => setError("Failed to load products"));
   }, []);
 
-  useEffect(() => {
-    getStockMovements()
-      .then(setMovements)
+  function loadStockMovements(page: number) {
+    setLoading(true);
+    setError(null);
+
+    getStockMovements(page, pageSize)
+      .then((data) => {
+        setMovements(data.movements);
+        setCurrentPage(data.page);
+        setTotalPages(data.total_pages);
+      })
       .catch(() => setError("Failed to load inventory"))
       .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    loadStockMovements(1)
   }, []);
 
   useEffect(() => {
@@ -98,8 +113,11 @@ export default function Inventory() {
     setSelectedProduct(productId);
 
     if (productId === "") {
-      const data = await getStockMovements();
-      setMovements(data);
+      const data = await getStockMovements(1, pageSize);
+
+      setMovements(data.movements);
+      setCurrentPage(data.page);
+      setTotalPages(data.total_pages);
       setFilterLoading(false);
       return;
     }
@@ -124,8 +142,11 @@ export default function Inventory() {
 
     try {
       if (userId === "") {
-        const data = await getStockMovements();
-        setMovements(data);
+        const data = await getStockMovements(1, pageSize);
+
+        setMovements(data.movements);
+        setCurrentPage(data.page);
+        setTotalPages(data.total_pages);
       } else {
         const data = await getStockMovementsByUser(userId);
         setMovements(data);
@@ -371,7 +392,7 @@ export default function Inventory() {
           ))}
         </select>
 
-                <select
+        <select
           value={selectedUser}
           onChange={(e) =>
             handleUserFilter(
@@ -486,6 +507,28 @@ export default function Inventory() {
               ))}
             </tbody>
           </table>
+        </div>
+
+        <div className="flex items-center justify-between border-t border-gray-200 px-6 py-4">
+          <button
+            onClick={() => loadStockMovements(currentPage - 1)}
+            disabled={currentPage === 1 || loading}
+            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Previous
+          </button>
+
+          <span className="text-sm text-gray-600">
+            Page {currentPage} of {totalPages}
+          </span>
+
+          <button
+            onClick={() => loadStockMovements(currentPage + 1)}
+            disabled={currentPage === totalPages || loading}
+            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Next
+          </button>
         </div>
 
         {movements.length === 0 && (

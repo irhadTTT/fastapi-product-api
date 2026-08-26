@@ -9,12 +9,28 @@ export default function Categories() {
   const [categoryName, setCategoryName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const pageSize = 10;
+
+
+  function loadCategories(page: number) {
+    setLoading(true);
+    setError(null);
+
+    getCategories(page, pageSize)
+      .then((data) => {
+        setCategories(data.categories);
+        setCurrentPage(data.page);
+        setTotalPages(data.total_pages);
+      })
+      .catch(() => setError("Failed to load inventory"))
+      .finally(() => setLoading(false));
+  }
 
   useEffect(() => {
-    getCategories()
-      .then(setCategories)
-      .catch(() => setError("Failed to load categories"))
-      .finally(() => setLoading(false));
+    loadCategories(1)
   }, []);
 
   async function handleCreate() {
@@ -25,13 +41,13 @@ export default function Categories() {
     try {
       setIsCreating(true);
 
-      const newCategory = await createCategory({
+      await createCategory({
         name: categoryName.trim()
       });
 
       setSuccess("Category created successfully");
 
-      setCategories((current) => [...current, newCategory]);
+      loadCategories(currentPage);
 
       setCategoryName("");
       setIsCreateModalOpen(false);
@@ -61,6 +77,8 @@ export default function Categories() {
       setCategories((current) =>
         current.filter((category) => category.id !== id)
       );
+      
+      loadCategories(currentPage);
     } catch {
       setError("Failed to delete category");
     }
@@ -170,6 +188,28 @@ export default function Categories() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="flex items-center justify-between border-t border-gray-200 px-6 py-4">
+        <button
+          onClick={() => loadCategories(currentPage - 1)}
+          disabled={currentPage === 1 || loading}
+          className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Previous
+        </button>
+
+        <span className="text-sm text-gray-600">
+          Page {currentPage} of {totalPages}
+        </span>
+
+        <button
+          onClick={() => loadCategories(currentPage + 1)}
+          disabled={currentPage === totalPages || loading}
+          className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Next
+        </button>
       </div>
     </div>
   );
