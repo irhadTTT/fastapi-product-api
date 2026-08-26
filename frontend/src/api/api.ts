@@ -60,9 +60,15 @@ export async function apiFetch<T>(
     }
 
     if (!response.ok) {
-        throw new Error(
-            `API request failed: ${response.status}`
-        );
+        let message = `API request failed: ${response.status}`;
+        try{
+            const errorData = await response.json();
+            if(errorData.detail)
+               message = errorData.detail;
+        }catch{
+           
+        }
+        throw new Error(message);
     }
 
     if (response.status === 204) {

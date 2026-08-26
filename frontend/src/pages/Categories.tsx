@@ -74,11 +74,13 @@ export default function Categories() {
 
       setSuccess("Category deleted successfully");
 
-      setCategories((current) =>
-        current.filter((category) => category.id !== id)
-      );
-      
-      loadCategories(currentPage);
+      const remainingCategories = categories.filter((c) => c.id !== id);
+      setCategories(remainingCategories)
+
+      if (remainingCategories.length === 0 && currentPage > 1)
+        loadCategories(currentPage - 1);
+      else
+        loadCategories(currentPage);
     } catch {
       setError("Failed to delete category");
     }

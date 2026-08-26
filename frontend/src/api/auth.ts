@@ -56,3 +56,9 @@ export async function refreshAccessToken(
 
   return response.json();
 }
+
+export function verifyEmail(token: string) {
+  return apiFetch<{ message: string }>(
+    `/auth/verify-email?token=${encodeURIComponent(token)}`
+  );
+}

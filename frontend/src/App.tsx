@@ -9,6 +9,7 @@ import Inventory from "./pages/Inventory";
 import Categories from "./pages/Categories";
 import Reports from "./pages/Reports";
 import Users from "./pages/Users";
+import VerifyEmail from "./pages/VerifyEmail";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<Login />} />
         </Route>
+        <Route path="/verify-email" element={<VerifyEmail />} />
         <Route element={<Layout />}>
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
