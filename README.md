@@ -125,6 +125,11 @@ The frontend is being developed as a separate application inside the `frontend/`
 <img width="1919" height="1023" alt="Screenshot 2026-08-20 212305" src="https://github.com/user-attachments/assets/e5397876-bed2-442c-a066-9e3bae5fbb00" />
 <img width="1919" height="1021" alt="Screenshot 2026-08-20 194844" src="https://github.com/user-attachments/assets/3599fc30-6af4-474f-9ef8-7f74f1162083" />
 
+<img width="1917" height="1030" alt="Screenshot 2026-08-26 134854" src="https://github.com/user-attachments/assets/f0bc7beb-ca11-4f71-b39a-e65d592629b3" />
+
+<img width="1917" height="1030" alt="Screenshot 2026-08-26 134651" src="https://github.com/user-attachments/assets/9497e2b8-ac75-4448-8702-f60976610c29" />
+<img width="1917" height="1017" alt="Screenshot 2026-08-26 131603" src="https://github.com/user-attachments/assets/19e8375d-335d-4428-972d-b0b9dfc2b85d" />
+<img width="1917" height="1023" alt="Screenshot 2026-08-26 134639" src="https://github.com/user-attachments/assets/48b5fa9e-db30-4d53-9d87-37736f087cf0" />
 
 ## Features 🚀
 
