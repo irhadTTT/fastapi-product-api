@@ -33,6 +33,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
+        "https://stockflow-frontend-5k4b.onrender.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
