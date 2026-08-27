@@ -79,3 +79,7 @@ export function register(data: RegisterRequest) {
     body: JSON.stringify(data),
   });
 }
+
+export function getMe() {
+  return apiFetch<User>("/auth/me");
+}

@@ -1,10 +1,23 @@
+import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { clearTokens } from "../../auth/authStorage";
+import { getMe } from "../../api/auth";
 
 
 function Sidebar() {
     const navigate = useNavigate();
+    const [userRole, setUserRole] = useState("");
+
+    useEffect(() => {
+        getMe()
+            .then((user) => {
+                setUserRole(user.role);
+            })
+            .catch((error) => {
+                console.error("Failed to get current user:", error);
+            });
+    }, []);
 
     function handleLogout() {
         const confirmed = window.confirm(
@@ -24,7 +37,9 @@ function Sidebar() {
         { name: "Inventory", path: "/inventory" },
         { name: "Categories", path: "/categories" },
         { name: "Reports", path: "/reports" },
-        { name: "Users", path: "/users" }
+        ...(userRole === "admin"
+        ? [{ name: "Users", path: "/users" }]
+        : [])
     ];
 
     return (
