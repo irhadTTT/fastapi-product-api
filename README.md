@@ -118,8 +118,13 @@ The frontend is being developed as a separate application inside the `frontend/`
 
 > 🚧 The React frontend is currently under active development.
 
-<img width="1917" height="1025" alt="Screenshot 2026-08-27 195147" src="https://github.com/user-attachments/assets/e0dcd080-c5bc-4085-b91d-a34df01472b3" />
+<img width="1917" height="1025" alt="Screenshot 2026-08-27 213800" src="https://github.com/user-attachments/assets/c1e71378-5a11-4fa0-993b-ed116b305c4b" />
 <img width="1916" height="1021" alt="Screenshot 2026-08-27 194834" src="https://github.com/user-attachments/assets/d368c3c4-19ae-4688-9273-7eaff52a9818" />
+
+<img width="1912" height="1027" alt="Screenshot 2026-08-27 213532" src="https://github.com/user-attachments/assets/0d65e979-61c0-470d-93ad-f7cfc8c2ee21" />
+<img width="1915" height="996" alt="Screenshot 2026-08-27 214645" src="https://github.com/user-attachments/assets/fe20ed14-9398-4023-9c72-4309e9c4cf09" />
+<img width="1917" height="1027" alt="Screenshot 2026-08-27 213732" src="https://github.com/user-attachments/assets/7524d4ec-e617-45b9-b664-2e47a7bef90e" />
+
 
 <img width="1913" height="1019" alt="Screenshot 2026-08-20 055024" src="https://github.com/user-attachments/assets/15fb6509-2306-425f-b204-272a8f5f4f88" />
 <img width="1917" height="940" alt="Screenshot 2026-08-20 055819" src="https://github.com/user-attachments/assets/f81d8169-7f90-43ef-9061-2c1ac27691bd" />
