@@ -118,6 +118,9 @@ The frontend is being developed as a separate application inside the `frontend/`
 
 > 🚧 The React frontend is currently under active development.
 
+<img width="1917" height="1025" alt="Screenshot 2026-08-27 195147" src="https://github.com/user-attachments/assets/e0dcd080-c5bc-4085-b91d-a34df01472b3" />
+<img width="1916" height="1021" alt="Screenshot 2026-08-27 194834" src="https://github.com/user-attachments/assets/d368c3c4-19ae-4688-9273-7eaff52a9818" />
+
 <img width="1913" height="1019" alt="Screenshot 2026-08-20 055024" src="https://github.com/user-attachments/assets/15fb6509-2306-425f-b204-272a8f5f4f88" />
 <img width="1917" height="940" alt="Screenshot 2026-08-20 055819" src="https://github.com/user-attachments/assets/f81d8169-7f90-43ef-9061-2c1ac27691bd" />
 <img width="1917" height="988" alt="Screenshot 2026-08-20 055341" src="https://github.com/user-attachments/assets/0a1015f3-3be4-4e63-81d7-6726b35f6d4a" />
