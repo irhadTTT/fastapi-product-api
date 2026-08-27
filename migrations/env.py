@@ -7,6 +7,7 @@ from sqlalchemy import create_engine, engine_from_config, pool
 from database import Base
 from models import category, product, user
 from models.idempotency_key import IdempotencyKey
+from models.password_reset_token import PasswordResetToken
 from models.refresh_token import RefreshToken
 from models.stock_movement import StockMovement
 

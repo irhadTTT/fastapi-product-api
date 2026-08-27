@@ -68,3 +68,60 @@ async def send_verification_email(email: str, token: str):
     fm = FastMail(conf)
 
     await fm.send_message(message)
+
+
+async def send_password_reset_email(email: str, token: str):
+
+    if settings.TESTING:
+        return
+
+    link = f"{settings.FRONTEND_URL}/reset-password?token={token}"
+
+    message = MessageSchema(
+        subject="Reset your StockFlow password",
+        recipients=[email],
+        body=f"""
+        <html>
+            <body>
+                <h2>Password Reset</h2>
+
+                <p>
+                    We received a request to reset your StockFlow password.
+                </p>
+
+                <p>
+                    Click the button below to set a new password:
+                </p>
+
+                <p>
+                    <a href="{link}"
+                    style="background:#2563eb;color:#fff;padding:12px 20px;
+                            text-decoration:none;border-radius:6px;display:inline-block;">
+                        Reset Password
+                    </a>
+                </p>
+
+                <p>
+                    This link will expire in 30 minutes.
+                </p>
+
+                <p>
+                    If you did not request a password reset,
+                    you can ignore this email.
+                </p>
+
+                <br>
+
+                <p>
+                    Kind regards,<br>
+                    StockFlow Team
+                </p>
+            </body>
+        </html>
+        """,
+        subtype="html",
+    )
+
+    fm = FastMail(conf)
+
+    await fm.send_message(message)

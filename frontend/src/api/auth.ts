@@ -83,3 +83,40 @@ export function register(data: RegisterRequest) {
 export function getMe() {
   return apiFetch<User>("/auth/me");
 }
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
+}
+
+export function forgotPassword(data: ForgotPasswordRequest) {
+  return apiFetch<ForgotPasswordResponse>(
+        "/auth/forgot-password",
+        {
+          method: "POST",
+          body: JSON.stringify(data),
+        }
+      );
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  new_password: string;
+}
+
+export interface ResetPasswordResponse {
+  message: string;
+}
+
+export function resetPassword(data: ResetPasswordRequest) {
+  return apiFetch<ResetPasswordResponse>(
+    "/auth/reset-password",
+    {
+      method: "POST",
+      body: JSON.stringify(data),
+    }
+  );
+}

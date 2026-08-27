@@ -11,6 +11,8 @@ import Reports from "./pages/Reports";
 import Users from "./pages/Users";
 import VerifyEmail from "./pages/VerifyEmail";
 import Register from "./pages/Register";
+import ResetPassword from "./pages/ResetPassword";
+import ForgotPassword from "./pages/ForgotPassword";
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />}/>
+          <Route path="/reset-password" element={<ResetPassword />}/>
         </Route>
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route element={<Layout />}>

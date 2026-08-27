@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta
+import secrets
+from datetime import datetime, timedelta, timezone
 
 from fastapi import Request
 from fastapi.security import OAuth2PasswordRequestForm
@@ -7,10 +8,13 @@ from sqlalchemy.orm import Session
 from core.exception import BadRequestException, NotFoundException, UnauthorizedException
 from core.logging import logger
 from core.security import create_email_token, verify_email_token
-from core.worker.tasks import send_verification_email_task
+from core.worker.tasks import (
+    send_password_reset_email_task,
+    send_verification_email_task,
+)
 from jwt_handler import create_access_token
 from models.user import User
-from repositories import user_repository
+from repositories import password_reset_repository, user_repository
 from schemas.user import UserCreate
 from security import hash_password, verify_password
 from services.cache_service import delete_cache_pattern
@@ -128,3 +132,80 @@ class AuthService:
         )
 
         return {"message": "Email verified successfully."}
+
+    @staticmethod
+    async def forgot_password(email: str, db: Session):
+        user = user_repository.get_by_email(db, email)
+
+        if not user:
+            raise NotFoundException("User not found.")
+
+        token = secrets.token_urlsafe(32)
+        expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(
+            minutes=30
+        )
+
+        password_reset_repository.create(
+            db=db,
+            user_id=user.id,
+            token=token,
+            expires_at=expires_at,
+        )
+
+        send_password_reset_email_task.delay(
+            user.email,
+            token,
+        )
+
+        logger.info(
+            "Password reset email task queued user_id=%s email=%s",
+            user.id,
+            user.email,
+        )
+
+        return {"message": "Password reset email sent."}
+
+    @staticmethod
+    async def reset_password(
+        token: str,
+        new_password: str,
+        db: Session,
+    ):
+        reset_token = password_reset_repository.get_by_token(
+            db,
+            token,
+        )
+
+        if not reset_token:
+            raise BadRequestException("Invalid or expired reset token.")
+
+        if reset_token.used:
+            raise BadRequestException("Reset token has already been used.")
+
+        if reset_token.expires_at < datetime.now(timezone.utc).replace(tzinfo=None):
+            raise BadRequestException("Reset token has expired.")
+
+        user = user_repository.get_by_id(
+            db,
+            reset_token.user_id,
+        )
+
+        if not user:
+            raise NotFoundException("User not found.")
+
+        user.password = hash_password(new_password)
+
+        password_reset_repository.mark_as_used(
+            db,
+            reset_token,
+        )
+
+        db.commit()
+        db.refresh(user)
+
+        logger.info(
+            "Password reset successfully user_id=%s",
+            user.id,
+        )
+
+        return {"message": "Password reset successfully."}

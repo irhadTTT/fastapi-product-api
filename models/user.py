@@ -15,3 +15,9 @@ class User(Base):
     role = Column(String, default="user")
     is_verified = Column(Boolean, default=False)
     stock_movements = relationship("StockMovement", back_populates="user")
+
+    password_reset_tokens = relationship(
+        "PasswordResetToken",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
+from fastapi import APIRouter, Depends, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
@@ -11,7 +11,12 @@ from jwt_handler import create_access_token
 from limiter import limiter
 from models.user import User
 from repositories import user_repository
-from schemas.user import UserCreate, UserResponse
+from schemas.user import (
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
+    UserCreate,
+    UserResponse,
+)
 from security import hash_password, verify_password
 from services.auth import AuthService
 
@@ -50,3 +55,19 @@ def get_me(current_user: User = Depends(get_current_user)):
 @router.get("/verify-email")
 async def verify_email(token: str, db: Session = Depends(get_db)):
     return await AuthService.verify_email(token, db)
+
+
+@router.post("/forgot-password")
+async def forgot_password(
+    data: ForgotPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    return await AuthService.forgot_password(data.email, db)
+
+
+@router.post("/reset-password")
+async def reset_password(
+    data: ResetPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    return await AuthService.reset_password(data.token, data.new_password, db)
