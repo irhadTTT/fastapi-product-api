@@ -1,4 +1,5 @@
 import { apiFetch } from "./api";
+import { type User } from "./users";
 
 export interface LoginResponse {
   access_token: string;
@@ -61,4 +62,20 @@ export function verifyEmail(token: string) {
   return apiFetch<{ message: string }>(
     `/auth/verify-email?token=${encodeURIComponent(token)}`
   );
+}
+
+export interface RegisterRequest {
+  username: string;
+  email: string;
+  password: string;
+}
+
+export function register(data: RegisterRequest) {
+  return apiFetch<User>("/auth/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
 }

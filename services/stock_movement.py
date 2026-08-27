@@ -118,34 +118,74 @@ class StockMovementService:
         return movement
 
     @staticmethod
-    async def get_all_stock_movements(db: Session):
-        cache_key = "stock_movements:list"
+    async def get_all_stock_movements(db: Session, page, limit):
+        cache_key = f"stock_movements:list:{page}:{limit}"
 
         cached = await get_cache(cache_key)
         # moram ga vratiti iz SQLAlchemy objekta koji vraca baza u Pydantic objekat koji koristi fastAPi za prikaz
         if cached:
-            logger.debug("Stock movements fetched from cache count=%s", len(cached))
-            return [
-                StockMovementResponse.model_validate(movement) for movement in cached
-            ]
+            logger.debug(
+                "Stock movements fetched from cache page=%s limit=%s count=%s",
+                page,
+                limit,
+                len(cached["movements"]),
+            )
+            return {
+                "movements": [
+                    StockMovementResponse.model_validate(movement)
+                    for movement in cached["movements"]
+                ],
+                "page": cached["page"],
+                "limit": cached["limit"],
+                "total": cached["total"],
+                "total_pages": cached["total_pages"],
+            }
 
-        movements = stock_movement_repository.get_all(db)
+        movements, total = stock_movement_repository.get_all(db, page, limit)
 
-        logger.info("Stock movements fetched from database count=%s", len(movements))
+        logger.info(
+            "Stock movements fetched from database page=%s limit=%s count=%s",
+            page,
+            limit,
+            len(movements),
+        )
 
         response = [
             StockMovementResponse.model_validate(movement) for movement in movements
         ]
 
+        total_pages = (total + limit - 1) // limit
+
+        result = {
+            "movements": response,
+            "page": page,
+            "limit": limit,
+            "total": total,
+            "total_pages": total_pages,
+        }
+
         await set_cache(
             cache_key,
-            [movement.model_dump(mode="json") for movement in response],
+            {
+                "movements": [
+                    movement.model_dump(mode="json") for movement in response
+                ],
+                "page": page,
+                "limit": limit,
+                "total": total,
+                "total_pages": total_pages,
+            },
             expire=300,
         )
 
-        logger.debug("Stock movements cache updated count=%s", len(response))
+        logger.debug(
+            "Stock movements cache updated page=%s limit=%s count=%s",
+            page,
+            limit,
+            len(response),
+        )
 
-        return response
+        return result
 
     @staticmethod
     async def get_stock_history_product(product_id: int, db: Session):

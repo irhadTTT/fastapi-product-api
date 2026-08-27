@@ -12,18 +12,26 @@ from enums.sort import UserRole
 from models.user import User
 from repositories import user_repository
 from schemas.auth import PasswordReset
-from schemas.user import UserCreate, UserResponse
+from schemas.user import UserBasicResponse, UserCreate, UserResponse, UsersResponse
 from security import hash_password
 from services.user import UserService
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
-@router.get("/", response_model=list[UserResponse])
+@router.get("/", response_model=UsersResponse)
 async def get_users(
-    db: Session = Depends(get_db), current_user: User = Depends(get_current_admin)
+    page: int = 1,
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin),
 ):
-    return await UserService.get_users(db, current_user)
+    return await UserService.get_users(db, current_user, page, limit)
+
+
+@router.get("/all", response_model=list[UserBasicResponse])
+async def get_all_users(db: Session = Depends(get_db)):
+    return await UserService.get_all_users(db)
 
 
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)

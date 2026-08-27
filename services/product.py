@@ -12,7 +12,12 @@ from enums.sort import SortField, SortOrder, UserRole
 from models.product import Item
 from models.user import User
 from repositories import product_repository
-from schemas.product import ItemCreate, ItemUpdate, ProductsResponse
+from schemas.product import (
+    ItemCreate,
+    ItemUpdate,
+    ProductBasicResponse,
+    ProductsResponse,
+)
 from services.cache_service import delete_cache_pattern, get_cache, set_cache
 
 
@@ -43,6 +48,12 @@ class ProductService:
         )
 
         return created_item
+
+    @staticmethod
+    async def get_all_products(db: Session):
+        products = product_repository.get_all(db)
+
+        return [ProductBasicResponse.model_validate(product) for product in products]
 
     @staticmethod
     async def get_items(

@@ -82,10 +82,38 @@ def test_get_all_categories(client, db_session):
 
     data = response.json()
 
-    assert len(data) == 3
-    assert data[0]["name"] == "TestCategory3"
-    assert data[1]["name"] == "TestCategory4"
-    assert data[2]["name"] == "TestCategory5"
+    assert len(data["categories"]) == 3
+    assert data["page"] == 1
+    assert data["limit"] == 10
+    assert data["total"] == 3
+    assert data["total_pages"] == 1
+
+    assert data["categories"][0]["name"] == "TestCategory3"
+    assert data["categories"][1]["name"] == "TestCategory4"
+    assert data["categories"][2]["name"] == "TestCategory5"
+
+
+def test_get_all_categories_pagination(client, db_session):
+    for i in range(12):
+        category = Category(
+            id=i,
+            name=f"Category {i + 1}",
+        )
+        db_session.add(category)
+
+    db_session.commit()
+
+    response = client.get("/categories/?page=2&limit=10")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["page"] == 2
+    assert data["limit"] == 10
+    assert data["total"] == 12
+    assert data["total_pages"] == 2
+    assert len(data["categories"]) == 2
 
 
 def test_delete_category_success(client, db_session):

@@ -3,8 +3,15 @@ from sqlalchemy.orm import Session
 from models.category import Category
 
 
-def get_all(db: Session):
-    return db.query(Category).all()
+def get_all(db: Session, page, limit):
+    query = db.query(Category)
+
+    total = query.count()
+    offset = (page - 1) * limit
+
+    categories = query.offset(offset).limit(limit).all()
+
+    return categories, total
 
 
 def get_by_id(db: Session, category_id: int):

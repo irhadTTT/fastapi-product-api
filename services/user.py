@@ -5,39 +5,85 @@ from core.exception import (
     NotFoundException,
 )
 from core.logging import logger
+from core.security import create_email_token
+from core.worker.tasks import send_verification_email_task
 from enums.sort import UserRole
 from models.user import User
 from repositories import user_repository
 from schemas.auth import PasswordReset
-from schemas.user import UserCreate, UserResponse
+from schemas.user import UserBasicResponse, UserCreate, UserResponse
 from security import hash_password
 from services.cache_service import delete_cache_pattern, get_cache, set_cache
 
 
 class UserService:
     @staticmethod
-    async def get_users(db: Session, current_user: User):
-        cache_key = "users:list"
+    async def get_users(db: Session, current_user: User, page, limit):
+        cache_key = f"users:list:{page}:{limit}"
 
         cached = await get_cache(cache_key)
 
         if cached:
-            logger.debug("Users fetched from cache count=%s", len(cached))
-            return [UserResponse.model_validate(user) for user in cached]
+            logger.debug(
+                "Users fetched from cache page=%s limit=%s count=%s",
+                page,
+                limit,
+                len(cached["users"]),
+            )
+            return {
+                "users": [
+                    UserResponse.model_validate(user) for user in cached["users"]
+                ],
+                "page": cached["page"],
+                "limit": cached["limit"],
+                "total": cached["total"],
+                "total_pages": cached["total_pages"],
+            }
 
-        users = user_repository.get_all(db)
+        users, total = user_repository.get_all(db, page, limit)
 
-        logger.info("Users fetched from database count=%s", len(users))
+        logger.info(
+            "Users fatched from database page=%s limit=%s count=%s",
+            page,
+            limit,
+            len(users),
+        )
 
         response = [UserResponse.model_validate(user) for user in users]
 
+        total_pages = (total + limit - 1) // limit
+
+        result = {
+            "users": response,
+            "page": page,
+            "limit": limit,
+            "total": total,
+            "total_pages": total_pages,
+        }
+
         await set_cache(
-            cache_key, [user.model_dump(mode="json") for user in response], expire=300
+            cache_key,
+            {
+                "users": [user.model_dump(mode="json") for user in response],
+                "page": page,
+                "limit": limit,
+                "total": total,
+                "total_pages": total_pages,
+            },
+            expire=300,
         )
 
-        logger.debug("Users cache updated count=%s", len(response))
+        logger.debug(
+            "Users cache updated page=%s limit=%s count=%s", page, limit, len(response)
+        )
 
-        return response
+        return result
+
+    @staticmethod
+    async def get_all_users(db: Session):
+        users = user_repository.get_all_users(db)
+
+        return [UserBasicResponse.model_validate(user) for user in users]
 
     @staticmethod
     async def create_user(user: UserCreate, db: Session, current_user: User):
@@ -60,6 +106,10 @@ class UserService:
         )
 
         created_user = user_repository.create(db, new_user)
+
+        token = create_email_token(created_user.email)
+
+        send_verification_email_task.delay(created_user.email, token)
 
         logger.info(
             "User created user_id=%s username=%s email=%s created_by=%s",

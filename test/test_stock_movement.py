@@ -223,19 +223,65 @@ async def test_get_all_stock_movements(client, auth_headers, db_session, current
 
     data = response.json()
 
-    assert len(data) == 2
+    assert len(data["movements"]) == 2
+    assert data["page"] == 1
+    assert data["limit"] == 10
+    assert data["total"] == 2
+    assert data["total_pages"] == 1
 
-    assert data[0]["product_id"] == product1.id
-    assert data[0]["user_id"] == current_user.id
-    assert data[0]["type"] == StockMovementType.IN
-    assert data[0]["quantity"] == 20
-    assert data[0]["note"] == "New products"
+    assert data["movements"][0]["product_id"] == product1.id
+    assert data["movements"][0]["user_id"] == current_user.id
+    assert data["movements"][0]["type"] == "IN"
+    assert data["movements"][0]["quantity"] == 20
+    assert data["movements"][0]["note"] == "New products"
 
-    assert data[1]["product_id"] == product1.id
-    assert data[1]["user_id"] == current_user.id
-    assert data[1]["type"] == "OUT"
-    assert data[1]["quantity"] == 10
-    assert data[1]["note"] == "Out products"
+    assert data["movements"][1]["product_id"] == product1.id
+    assert data["movements"][1]["user_id"] == current_user.id
+    assert data["movements"][1]["type"] == "OUT"
+    assert data["movements"][1]["quantity"] == 10
+    assert data["movements"][1]["note"] == "Out products"
+
+
+@pytest.mark.asyncio
+async def test_get_all_stock_movements_pagination(
+    client, auth_headers, db_session, current_user
+):
+    product = Item(
+        name="TestProduct",
+        price=100,
+        stock_quantity=100,
+    )
+
+    db_session.add(product)
+    db_session.commit()
+    db_session.refresh(product)
+
+    for i in range(15):
+        movement = StockMovement(
+            product_id=product.id,
+            user_id=current_user.id,
+            type=StockMovementType.IN,
+            quantity=i + 1,
+            note=f"Movement {i + 1}",
+        )
+        db_session.add(movement)
+
+    db_session.commit()
+
+    response = client.get(
+        "/stock-movements?page=2&limit=10",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["page"] == 2
+    assert data["limit"] == 10
+    assert data["total"] == 15
+    assert data["total_pages"] == 2
+    assert len(data["movements"]) == 5
 
 
 @pytest.mark.asyncio
@@ -288,6 +334,10 @@ async def test_get_stock_history_user_from_cache(monkeypatch, db_session):
         {
             "id": 1,
             "product_id": 1,
+            "product": {
+                "id": 1,
+                "name": "TestProduct",
+            },
             "user_id": 5,
             "quantity": 10,
             "type": StockMovementType.IN,
@@ -439,6 +489,10 @@ async def test_get_stock_history_product_from_cache(monkeypatch, db_session):
         {
             "id": 1,
             "product_id": 1,
+            "product": {
+                "id": 1,
+                "name": "TestProduct",
+            },
             "user_id": 5,
             "quantity": 10,
             "type": StockMovementType.IN,
@@ -535,6 +589,6 @@ async def test_get_stock_history_product_empty(monkeypatch, db_session):
         mock_get_by_product_id,
     )
 
-    result = await StockMovementService.get_stock_history_user(999, db_session)
+    result = await StockMovementService.get_stock_history_product(999, db_session)
 
     assert result == []

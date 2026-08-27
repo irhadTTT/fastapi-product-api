@@ -14,33 +14,76 @@ from services.cache_service import delete_cache_pattern, get_cache, set_cache
 
 class CategoryService:
     @staticmethod
-    async def get_all(db: Session):
-        cache_key = "categories:list"
+    async def get_all(db: Session, page, limit):
+
+        cache_key = f"categories:list:{page}:{limit}"
 
         cached = await get_cache(cache_key)
 
         if cached:
-            logger.debug("Categories fetched from cache count=%s", len(cached))
+            logger.debug(
+                "Categories fetched from cache page=%s limit=%s count=%s",
+                page,
+                limit,
+                len(cached["categories"]),
+            )
 
-            return [CategoryResponse.model_validate(category) for category in cached]
+            return {
+                "categories": [
+                    CategoryResponse.model_validate(category)
+                    for category in cached["categories"]
+                ],
+                "page": cached["page"],
+                "limit": cached["limit"],
+                "total": cached["total"],
+                "total_pages": cached["total_pages"],
+            }
 
-        categories = category_repository.get_all(db)
+        categories, total = category_repository.get_all(db, page, limit)
 
-        logger.info("Categories fetched from database count=%s", len(categories))
+        logger.info(
+            "Categories fetched from cache page=%s limit=%s count=%s",
+            page,
+            limit,
+            len(categories),
+        )
 
         response = [
             CategoryResponse.model_validate(category) for category in categories
         ]
 
+        total_pages = (total + limit - 1) // limit
+
+        result = {
+            "categories": response,
+            "page": page,
+            "limit": limit,
+            "total": total,
+            "total_pages": total_pages,
+        }
+
         await set_cache(
             cache_key,
-            [category.model_dump(mode="json") for category in response],
+            {
+                "categories": [
+                    category.model_dump(mode="json") for category in response
+                ],
+                "page": page,
+                "limit": limit,
+                "total": total,
+                "total_pages": total_pages,
+            },
             expire=300,
         )
 
-        logger.debug("Categories cache updated count=%s", len(response))
+        logger.debug(
+            "Categories cache updated page=%s limit=%s count=%s",
+            page,
+            limit,
+            len(response),
+        )
 
-        return response
+        return result
 
     @staticmethod
     async def create_category(

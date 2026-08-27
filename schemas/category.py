@@ -11,3 +11,11 @@ class CategoryResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class CategoriesResponse(BaseModel):
+    categories: list[CategoryResponse]
+    page: int
+    limit: int
+    total: int
+    total_pages: int

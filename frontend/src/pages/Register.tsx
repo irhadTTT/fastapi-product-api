@@ -1,35 +1,45 @@
 import { useState } from "react";
 import type { SubmitEvent } from "react";
-import { login } from "../api/auth";
-import { saveTokens } from "../auth/authStorage";
+import { register } from "../api/auth";
 import { useNavigate, Link } from "react-router-dom";
 
-function Login() {
+function Register() {
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const navigate = useNavigate();
 
   async function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
 
     setError("");
+    setSuccess("");
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
 
     try {
-      const data = await login({
+      await register({
         username,
+        email,
         password,
       });
 
-      saveTokens(
-        data.access_token,
-        data.refresh_token
+      setSuccess(
+        "Account created successfully. Please check your email to verify your account."
       );
 
-      navigate("/dashboard");
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
     } catch (error) {
       console.error(error);
-      setError("Login failed");
+      setError("Registration failed");
     }
   }
 
@@ -40,7 +50,7 @@ function Login() {
         className="w-full max-w-md rounded-xl bg-white p-8 shadow"
       >
         <h1 className="text-2xl font-bold text-slate-900">
-          Login
+          Create Account
         </h1>
 
         <div className="mt-6">
@@ -53,6 +63,21 @@ function Login() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2"
+            required
+          />
+        </div>
+
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-slate-700">
+            Email
+          </label>
+
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2"
+            required
           />
         </div>
 
@@ -66,6 +91,21 @@ function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2"
+            required
+          />
+        </div>
+
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-slate-700">
+            Confirm Password
+          </label>
+
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2"
+            required
           />
         </div>
 
@@ -75,20 +115,26 @@ function Login() {
           </p>
         )}
 
+        {success && (
+          <p className="mt-4 text-sm text-green-600">
+            {success}
+          </p>
+        )}
+
         <button
           type="submit"
           className="mt-6 w-full rounded-lg bg-slate-900 px-4 py-2 text-white hover:bg-slate-800"
         >
-          Login
+          Create Account
         </button>
 
         <p className="mt-4 text-center text-sm text-slate-600">
-          Don't have an account?{" "}
+          Already have an account?{" "}
           <Link
-            to="/register"
+            to="/login"
             className="font-medium text-slate-900 hover:underline"
           >
-            Register
+            Login
           </Link>
         </p>
       </form>
@@ -96,4 +142,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default Register;

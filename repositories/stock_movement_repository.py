@@ -1,10 +1,18 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from models.stock_movement import StockMovement
 
 
-def get_all(db: Session):
-    return db.query(StockMovement).all()
+def get_all(db: Session, page: int = 1, limit: int = 10):
+
+    query = db.query(StockMovement).options(joinedload(StockMovement.product))
+
+    total = query.count()
+    offset = (page - 1) * limit
+
+    movements = query.offset(offset).limit(limit).all()
+
+    return movements, total
 
 
 def get_by_product_id(db: Session, product_id: int):

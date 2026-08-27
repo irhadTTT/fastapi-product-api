@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from schemas.category import CategoryResponse
 
@@ -41,3 +41,10 @@ class ProductsResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class ProductBasicResponse(BaseModel):
+    id: int
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)

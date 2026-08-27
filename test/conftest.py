@@ -8,6 +8,7 @@ from sqlalchemy.orm import sessionmaker
 from database import Base, get_db
 from enums.stock_movement_type import StockMovementType
 from main import app, limiter
+from models.product import Item
 from models.stock_movement import StockMovement
 from models.user import User
 from security import hash_password
@@ -124,12 +125,25 @@ def current_user(db_session):
 
 @pytest.fixture
 def stock_movement(db_session):
+    product = Item(
+        name="TestProduct",
+        price=100,
+        stock_quantity=20,
+    )
+
+    db_session.add(product)
+    db_session.commit()
+    db_session.refresh(product)
+
     movement = StockMovement(
-        product_id=1,
+        product_id=product.id,
         user_id=1,
         quantity=10,
         type=StockMovementType.IN,
+        note="Test movement",
     )
+
+    movement.product = product
 
     db_session.add(movement)
     db_session.commit()

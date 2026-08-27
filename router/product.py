@@ -11,7 +11,12 @@ from dependencies import get_current_admin, get_current_user
 from enums.sort import SortField, SortOrder, UserRole
 from models.product import Item
 from models.user import User
-from schemas.product import ItemCreate, ItemUpdate, ProductsResponse
+from schemas.product import (
+    ItemCreate,
+    ItemUpdate,
+    ProductBasicResponse,
+    ProductsResponse,
+)
 from services.product import ProductService
 
 router = APIRouter(prefix="/products", tags=["Products"])
@@ -24,6 +29,11 @@ async def create_item(
     current_user: User = Depends(get_current_user),
 ):
     return await ProductService.create_item(item, db, current_user)
+
+
+@router.get("/all", response_model=list[ProductBasicResponse])
+async def get_all_products(db: Session = Depends(get_db)):
+    return await ProductService.get_all_products(db)
 
 
 @router.get("/", response_model=ProductsResponse)

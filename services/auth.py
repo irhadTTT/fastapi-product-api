@@ -4,9 +4,9 @@ from fastapi import Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from core.exception import BadRequestException, UnauthorizedException
+from core.exception import BadRequestException, NotFoundException, UnauthorizedException
 from core.logging import logger
-from core.security import create_email_token
+from core.security import create_email_token, verify_email_token
 from core.worker.tasks import send_verification_email_task
 from jwt_handler import create_access_token
 from models.user import User
@@ -100,3 +100,31 @@ class AuthService:
         await delete_cache_pattern("users:*")
 
         return {"message": "User created successfully."}
+
+    @staticmethod
+    async def verify_email(token: str, db: Session):
+        email = verify_email_token(token)
+
+        if not email:
+            raise BadRequestException("Invalid or expired verification link.")
+
+        user = user_repository.get_by_email(db, email)
+
+        if not user:
+            raise NotFoundException("User not found.")
+
+        if user.is_verified:
+            return {"message": "Email already verified."}
+
+        user.is_verified = True
+
+        db.commit()
+        db.refresh(user)
+
+        logger.info(
+            "User email verified user_id=%s email=%s",
+            user.id,
+            user.email,
+        )
+
+        return {"message": "Email verified successfully."}

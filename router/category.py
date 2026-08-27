@@ -6,7 +6,7 @@ from dependencies import get_current_admin
 from models.category import Category
 from models.user import User
 from repositories import category_repository
-from schemas.category import CategoryCreate, CategoryResponse
+from schemas.category import CategoriesResponse, CategoryCreate, CategoryResponse
 from services.category import CategoryService
 
 router = APIRouter(prefix="/categories", tags=["Categories"])
@@ -21,9 +21,9 @@ async def create_category(
     return await CategoryService.create_category(category, db, current_user)
 
 
-@router.get("/", response_model=list[CategoryResponse])
-async def get_categories(db: Session = Depends(get_db)):
-    return await CategoryService.get_all(db)
+@router.get("/", response_model=CategoriesResponse)
+async def get_categories(page: int = 1, limit: int = 10, db: Session = Depends(get_db)):
+    return await CategoryService.get_all(db, page, limit)
 
 
 @router.delete("/{category_id}", status_code=status.HTTP_204_NO_CONTENT)

@@ -34,26 +34,67 @@ async def test_get_users(client, admin_auth_headers, db_session):
 
     data = response.json()
 
-    assert len(data) >= 3
+    assert len(data["users"]) >= 3
 
-    usernames = [user["username"] for user in data]
+    assert data["page"] == 1
+    assert data["limit"] == 10
+    assert data["total"] == 4
+    assert data["total_pages"] == 1
+
+    usernames = [user["username"] for user in data["users"]]
 
     assert "TestUser" in usernames
     assert "TestUser2" in usernames
     assert "TestUser3" in usernames
 
+    assert data["users"][0]["is_verified"] is False
+
+
+def test_get_users_pagination(client, admin_auth_headers, db_session):
+    for i in range(13):
+        user = User(
+            username=f"User {i + 1}",
+            email=f"testuser{i + 1}@test.com",
+            password=f"testuser{i + 1}",
+            role="user",
+        )
+        db_session.add(user)
+
+    db_session.commit()
+
+    response = client.get(
+        "/users/?page=2&limit=10",
+        headers=admin_auth_headers,
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["page"] == 2
+    assert data["limit"] == 10
+    assert data["total"] >= 13
+    assert data["total_pages"] == (data["total"] + data["limit"] - 1) // data["limit"]
+    assert len(data["users"]) == data["total"] - 10
+
 
 @pytest.mark.asyncio
 async def test_get_users_from_cache(monkeypatch, db_session, current_user):
-    cached_movements = [
-        {
-            "id": 1,
-            "username": "TestUser4",
-            "email": "testuser4@test.com",
-            "password": "testuser4",
-            "role": "user",
-        }
-    ]
+    cached_movements = {
+        "users": [
+            {
+                "id": 1,
+                "username": "TestUser4",
+                "email": "testuser4@test.com",
+                "role": "user",
+                "is_verified": False,
+            }
+        ],
+        "page": 1,
+        "limit": 10,
+        "total": 1,
+        "total_pages": 1,
+    }
 
     async def mock_get_cache(key):
         return cached_movements
@@ -73,10 +114,14 @@ async def test_get_users_from_cache(monkeypatch, db_session, current_user):
         mock_get_all,
     )
 
-    result = await UserService.get_users(db_session, current_user)
+    result = await UserService.get_users(db_session, current_user, 1, 10)
 
-    assert len(result) == 1
-    assert result[0].id == 1
+    assert len(result["users"]) == 1
+    assert result["users"][0].username == "TestUser4"
+    assert result["page"] == 1
+    assert result["limit"] == 10
+    assert result["total"] == 1
+    assert result["total_pages"] == 1
 
 
 @pytest.mark.asyncio
@@ -87,6 +132,7 @@ async def test_get_users_cache_miss(monkeypatch, db_session, current_user):
         password="usertest",
         email="otheruser@test.com",
         role="user",
+        is_verified=False,
     )
 
     async def mock_get_cache(key):
@@ -106,15 +152,21 @@ async def test_get_users_cache_miss(monkeypatch, db_session, current_user):
 
     monkeypatch.setattr("services.user.set_cache", mock_set_cache)
 
-    def mock_get_all(db):
-        return [user]
+    def mock_get_all(db, page, limit):
+        return [user], 1
 
     monkeypatch.setattr("services.user.user_repository.get_all", mock_get_all)
 
-    result = await UserService.get_users(db_session, current_user)
+    result = await UserService.get_users(db_session, current_user, 1, 10)
 
-    assert len(result) == 1
-    assert cache_data["key"] == "users:list"
+    assert len(result) == 5
+    assert result["users"][0].username == "usertest"
+    assert result["page"] == 1
+    assert result["limit"] == 10
+    assert result["total"] == 1
+    assert result["total_pages"] == 1
+
+    assert cache_data["key"] == "users:list:1:10"
     assert cache_data["expire"] == 300
 
 
@@ -123,8 +175,8 @@ async def test_get_users_empty(monkeypatch, db_session, current_user):
     async def mock_get_cache(key):
         return None
 
-    def mock_get_all(db):
-        return []
+    def mock_get_all(db, page, limit):
+        return [], 0
 
     async def mock_set_cache(key, value, expire):
         pass
@@ -138,9 +190,13 @@ async def test_get_users_empty(monkeypatch, db_session, current_user):
         mock_get_all,
     )
 
-    result = await UserService.get_users(db_session, current_user)
+    result = await UserService.get_users(db_session, current_user, 1, 10)
 
-    assert result == []
+    assert result["users"] == []
+    assert result["page"] == 1
+    assert result["limit"] == 10
+    assert result["total"] == 0
+    assert result["total_pages"] == 0
 
 
 @pytest.mark.asyncio

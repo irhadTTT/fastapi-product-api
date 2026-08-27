@@ -4,8 +4,19 @@ from enums.sort import UserRole
 from models.user import User
 
 
-def get_all(db: Session):
+def get_all_users(db: Session):
     return db.query(User).all()
+
+
+def get_all(db: Session, page, limit):
+    query = db.query(User)
+
+    total = query.count()
+    offset = (page - 1) * limit
+
+    users = query.offset(offset).limit(limit).all()
+
+    return users, total
 
 
 def get_by_id(db: Session, user_id: int):
