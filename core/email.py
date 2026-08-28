@@ -10,8 +10,8 @@ conf = ConnectionConfig(
     MAIL_FROM_NAME=settings.MAIL_FROM_NAME,
     MAIL_SERVER=settings.MAIL_SERVER,
     MAIL_PORT=settings.MAIL_PORT,
-    MAIL_STARTTLS=False,
-    MAIL_SSL_TLS=True,
+    MAIL_STARTTLS=True,
+    MAIL_SSL_TLS=False,
     USE_CREDENTIALS=True,
 )
 
