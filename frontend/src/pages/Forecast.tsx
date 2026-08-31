@@ -56,6 +56,10 @@ function Forecast() {
         }
     }
 
+    const selectedProduct = products.find(
+        (product) => product.id === forecast?.product_id
+    );
+
     return (
         <div>
             <h1 className="text-3xl font-bold text-slate-900">
@@ -139,20 +143,24 @@ function Forecast() {
 
                         <div className="rounded-xl bg-white p-6 shadow-sm">
                             <p className="text-sm text-slate-500">
-                                Product ID
+                                Product
                             </p>
 
-                            <p className="mt-2 text-3xl font-bold text-slate-900">
-                                #{forecast.product_id}
+                            <p className="mt-2 text-2xl font-bold text-slate-900">
+                                {selectedProduct?.name ?? `#${forecast.product_id}`}
                             </p>
                         </div>
                     </div>
 
                     <div className="mt-6 overflow-hidden rounded-xl bg-white shadow-sm">
-                        <div className="overflow-x-auto">
+                        <div className="max-h-[500px] overflow-y-auto overflow-x-auto">
                             <table className="w-full text-left">
                                 <thead className="border-b border-slate-200 bg-slate-50">
                                     <tr>
+                                        <th className="px-6 py-4 text-sm font-semibold text-slate-700">
+                                            Day
+                                        </th>
+
                                         <th className="px-6 py-4 text-sm font-semibold text-slate-700">
                                             Date
                                         </th>
@@ -164,16 +172,27 @@ function Forecast() {
                                 </thead>
 
                                 <tbody>
-                                    {forecast.predictions.map((prediction) => (
+                                    {forecast.predictions.map((prediction, index) => (
                                         <tr
                                             key={prediction.date}
                                             className="border-b border-slate-100 last:border-0 hover:bg-slate-50"
                                         >
-                                            <td className="px-6 py-4 text-slate-600">
-                                                {prediction.date}
+                                            <td className="px-6 py-4 text-slate-500">
+                                                Day {index + 1}
                                             </td>
 
                                             <td className="px-6 py-4 font-medium text-slate-900">
+                                                {new Date(prediction.date).toLocaleDateString(
+                                                    "bs-BA",
+                                                    {
+                                                        day: "2-digit",
+                                                        month: "2-digit",
+                                                        year: "numeric",
+                                                    }
+                                                )}
+                                            </td>
+
+                                            <td className="px-6 py-4 font-semibold text-slate-900">
                                                 {prediction.predicted_demand}
                                             </td>
                                         </tr>

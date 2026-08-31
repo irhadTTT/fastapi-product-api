@@ -1,5 +1,7 @@
 import pandas as pd
 
+from ml.forecasting import predict_demand
+
 
 def build_demand_dataset(movements) -> pd.DataFrame:
     data = [
@@ -88,3 +90,47 @@ def create_prediction_features(df: pd.DataFrame) -> pd.DataFrame:
             }
         ]
     )
+
+
+def forecast_future_demand(
+    model,
+    df: pd.DataFrame,
+    days: int,
+) -> pd.DataFrame:
+
+    history = df.copy()
+    predictions = []
+
+    for _ in range(days):
+        prediction_features = create_prediction_features(history)
+
+        prediction = predict_demand(
+            model,
+            prediction_features,
+        )
+
+        prediction_date = prediction_features.iloc[0]["date"]
+
+        predictions.append(
+            {
+                "date": prediction_date,
+                "predicted_demand": prediction,
+            }
+        )
+
+        history = pd.concat(
+            [
+                history,
+                pd.DataFrame(
+                    [
+                        {
+                            "date": prediction_date,
+                            "demand": prediction,
+                        }
+                    ]
+                ),
+            ],
+            ignore_index=True,
+        )
+
+    return pd.DataFrame(predictions)

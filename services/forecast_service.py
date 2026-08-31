@@ -6,6 +6,7 @@ from ml.features import (
     build_demand_dataset,
     create_features,
     create_prediction_features,
+    forecast_future_demand,
     prepare_training_data,
 )
 from ml.forecasting import predict_demand, train_model
@@ -76,20 +77,27 @@ class ForecastService:
 
         model = train_model(training_data)
 
-        prediction_features = create_prediction_features(demand_df)
+        predictions_df = forecast_future_demand(
+            model,
+            demand_df,
+            days=30,
+        )
 
-        prediction = predict_demand(model, prediction_features)
+        predictions = [
+            DemandForecastItem(
+                date=row["date"].date(),
+                predicted_demand=float(row["predicted_demand"]),
+            )
+            for _, row in predictions_df.iterrows()
+        ]
 
-        prediction_date = prediction_features.iloc[0]["date"].date()
+        total_predicted_demand = sum(
+            prediction.predicted_demand for prediction in predictions
+        )
 
         return DemandForecastResponse(
             product_id=product_id,
-            forecast_days=1,
-            predictions=[
-                DemandForecastItem(
-                    date=prediction_date,
-                    predicted_demand=prediction,
-                )
-            ],
-            total_predicted_demand=prediction,
+            forecast_days=30,
+            predictions=predictions,
+            total_predicted_demand=total_predicted_demand,
         )

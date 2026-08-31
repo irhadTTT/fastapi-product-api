@@ -7,6 +7,7 @@ from enums.stock_movement_type import StockMovementType
 from ml.features import (
     create_features,
     create_prediction_features,
+    forecast_future_demand,
     prepare_training_data,
 )
 from ml.forecasting import predict_demand, train_model
@@ -200,7 +201,58 @@ def test_forecast_product_demand(
 
     assert isinstance(result, DemandForecastResponse)
     assert result.product_id == product.id
-    assert result.forecast_days == 1
-    assert len(result.predictions) == 1
+    assert result.forecast_days == 30
+    assert len(result.predictions) == 30
     assert result.predictions[0].predicted_demand >= 0
     assert result.total_predicted_demand >= 0
+
+
+def test_forecast_future_demand():
+    dates = pd.date_range(
+        start="2026-08-01",
+        periods=14,
+        freq="D",
+    )
+
+    demand_df = pd.DataFrame(
+        {
+            "date": dates,
+            "demand": [
+                10,
+                12,
+                8,
+                15,
+                11,
+                9,
+                13,
+                14,
+                10,
+                16,
+                12,
+                11,
+                15,
+                13,
+            ],
+        }
+    )
+
+    features_df = create_features(demand_df)
+
+    training_data = prepare_training_data(features_df)
+
+    model = train_model(training_data)
+
+    result = forecast_future_demand(
+        model,
+        demand_df,
+        30,
+    )
+
+    assert len(result) == 30
+
+    assert "date" in result.columns
+    assert "predicted_demand" in result.columns
+
+    assert result["date"].is_monotonic_increasing
+
+    assert (result["predicted_demand"] >= 0).all()
