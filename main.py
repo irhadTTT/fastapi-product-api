@@ -16,6 +16,7 @@ from limiter import limiter
 from router import (
     auth,
     category,
+    forcast,
     inventory_report,
     product,
     refresh_token,
@@ -56,6 +57,7 @@ app.include_router(category.router)
 app.include_router(stock_movement.router)
 app.include_router(refresh_token.router)
 app.include_router(inventory_report.router)
+app.include_router(forcast.router)
 
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 

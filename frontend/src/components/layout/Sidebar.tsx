@@ -37,6 +37,7 @@ function Sidebar() {
         { name: "Inventory", path: "/inventory" },
         { name: "Categories", path: "/categories" },
         { name: "Reports", path: "/reports" },
+        { name: "Demand Forecast", path: "/forecast" },
         ...(userRole === "admin"
         ? [{ name: "Users", path: "/users" }]
         : [])

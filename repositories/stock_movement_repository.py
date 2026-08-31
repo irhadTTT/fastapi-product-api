@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session, joinedload
 
+from enums.stock_movement_type import StockMovementType
 from models.stock_movement import StockMovement
 
 
@@ -45,3 +46,15 @@ def get_by_id(db: Session, stock_movement_id: int):
 def create(db: Session, movement: StockMovement):
     db.add(movement)
     return movement
+
+
+def get_out_movements_by_product_id(db: Session, product_id: int):
+    return (
+        db.query(StockMovement)
+        .filter(
+            StockMovement.product_id == product_id,
+            StockMovement.type == StockMovementType.OUT,
+        )
+        .order_by(StockMovement.created_at.asc())
+        .all()
+    )

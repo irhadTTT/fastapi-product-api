@@ -13,6 +13,7 @@ import VerifyEmail from "./pages/VerifyEmail";
 import Register from "./pages/Register";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
+import Forecast from "./pages/Forecast";
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
             <Route path="/categories" element={<Categories />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/users" element={<Users />} />
+            <Route path="/forecast" element={<Forecast />}/>
           </Route>
         </Route>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
