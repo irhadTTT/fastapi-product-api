@@ -3,9 +3,9 @@
 
 A scalable inventory management REST API built with with FastAPI, PostgreSQL, SQLAlchemy, Alembic, Redis, Celery and Docker.
 
-StockFlow is a backend system designed with a clean layered architecture using Routers, Services and Repository patterns. It provides secure user authentication, role-based access control, product and category management, inventory tracking and stock movement history,caching and asynchronous background processing and ML-powered demand forecasting.
+StockFlow is a backend system designed with a clean layered architecture using Routers, Services and Repository patterns. It provides secure user authentication, role-based access control, product and category management, inventory tracking and stock movement history,caching and asynchronous background processing and ML-powered demand forecasting for 30 days in advance.
 
-The API includes email verification, protected resources, advanced product search, filtering, sorting, pagination, image management and inventory reporting with database-level aggregations and next-day demand prediction using a Random Forest Regressor.
+The API includes email verification, protected resources, advanced product search, filtering, sorting, pagination, image management and inventory reporting with database-level aggregations and 30 days demand prediction using a Random Forest Regressor.
 
 Built with production-oriented practices including centralized exception handling, structured logging, database migrations, automated testing, CI/CD, rate limiting, Prometheus metrics and Grafana monitoring.
 
@@ -145,7 +145,7 @@ The frontend is being developed as a separate application inside the `frontend/`
 
 StockFlow includes a **machine learning-based demand forecasting system** powered by a **Random Forest Regressor**.
 
-The system analyzes historical stock movement data and predicts the expected demand for a product on the **following day**.
+The system analyzes historical stock movement data and predicts the expected demand for a product **30 days in advance showing statistics day by day**.
 
 ### How It Works
 
@@ -159,30 +159,9 @@ The forecasting pipeline follows these steps:
 ↓  
 **Random Forest Regression Model**  
 ↓  
-**Next-Day Demand Prediction**
+**30 Days Demand Prediction**
 
-### Features Used
-
-| Feature | Description |
-|---|---|
-| `lag_1` | Demand from the previous day |
-| `lag_7` | Demand from seven days earlier |
-| `rolling_mean_7` | Average demand over the previous seven days |
-| `day_of_week` | Day of the week of the prediction date |
-
-### Forecasting Requirements
-
-A minimum of **7 days of historical demand data** is required before a forecast can be generated.
-
-### Example
-
-For a product with historical demand data, the system can generate a prediction such as:
-
-| Date | Predicted Demand |
-|---|---:|
-| 2026-09-01 | **8.5** |
-
-The forecast is exposed through a dedicated **FastAPI endpoint** and integrated into the **React frontend**, where users can select a product and generate its demand forecast.
+The forecast is exposed through a dedicated **FastAPI endpoint** and integrated into the **React frontend**, where users can select a product and generate its 30 days demand forecast prediction.
 
 ### ML Stack
 
@@ -193,7 +172,7 @@ The forecast is exposed through a dedicated **FastAPI endpoint** and integrated 
 - **FastAPI** – forecasting API
 - **React + TypeScript** – frontend visualization
 
-<img width="1917" height="1027" alt="Screenshot 2026-08-31 104547" src="https://github.com/user-attachments/assets/a691b505-88cd-4781-bb51-712b53f357d2" />
+<img width="1917" height="1026" alt="Screenshot 2026-08-31 125903" src="https://github.com/user-attachments/assets/08a697af-fab2-4df1-8895-56387c97a6fa" />
 
 
 ### Authentication & Authorization
