@@ -20,5 +20,20 @@ export async function forecastProductDemand(
     );
 }
 
+export interface ReorderRecommendationResponse {
+    product_id: number;
+    current_stock: number;
+    forecasted_demand: number;
+    safety_stock: number;
+    recommended_reorder: number;
+}
+
+export async function getReorderRecommendation(
+    productId: number
+) {
+    return apiFetch<ReorderRecommendationResponse>(
+        `/forecast/products/${productId}/reorder`
+    );
+}
 
 

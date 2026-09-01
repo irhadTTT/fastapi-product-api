@@ -13,3 +13,11 @@ class DemandForecastResponse(BaseModel):
     forecast_days: int
     predictions: list[DemandForecastItem]
     total_predicted_demand: float
+
+
+class ReorderRecommendationResponse(BaseModel):
+    product_id: int
+    current_stock: int
+    forecasted_demand: float
+    safety_stock: float
+    recommended_reorder: int

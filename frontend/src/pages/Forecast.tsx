@@ -2,13 +2,16 @@ import { useEffect, useState } from "react";
 import { getAllProducts, type Product } from "../api/products";
 import {
     forecastProductDemand,
+    getReorderRecommendation,
     type DemandForecastResponse,
+    type ReorderRecommendationResponse,
 } from "../api/forecast";
 
 function Forecast() {
     const [products, setProducts] = useState<Product[]>([]);
     const [selectedProductId, setSelectedProductId] = useState("");
     const [forecast, setForecast] = useState<DemandForecastResponse | null>(null);
+    const [reorder, setReorder] = useState<ReorderRecommendationResponse | null>(null);
 
     const [loadingProducts, setLoadingProducts] = useState(true);
     const [loadingForecast, setLoadingForecast] = useState(false);
@@ -39,12 +42,17 @@ function Forecast() {
             setLoadingForecast(true);
             setError(null);
             setForecast(null);
+            setReorder(null);
 
-            const data = await forecastProductDemand(
-                Number(selectedProductId)
-            );
+            const productId = Number(selectedProductId);
 
-            setForecast(data);
+            const [forecastData, reorderData] = await Promise.all([
+                forecastProductDemand(productId),
+                getReorderRecommendation(productId),
+            ]);
+
+            setForecast(forecastData);
+            setReorder(reorderData);
         } catch (error) {
             setError(
                 error instanceof Error
@@ -151,7 +159,63 @@ function Forecast() {
                             </p>
                         </div>
                     </div>
+                    {reorder && (
+                        <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
+                            <h2 className="text-lg font-semibold text-slate-900">
+                                Smart Reorder Recommendation
+                            </h2>
 
+                            <p className="mt-1 text-sm text-slate-500">
+                                Recommended inventory replenishment based on predicted demand.
+                            </p>
+
+                            <div className="mt-5 grid gap-4 md:grid-cols-3">
+                                <div className="rounded-lg bg-slate-50 p-4">
+                                    <p className="text-sm text-slate-500">
+                                        Current Stock
+                                    </p>
+
+                                    <p className="mt-2 text-2xl font-bold text-slate-900">
+                                        {reorder.current_stock}
+                                    </p>
+                                </div>
+
+                                <div className="rounded-lg bg-blue-50 p-4">
+                                    <p className="text-sm font-semibold text-blue-700">
+                                        30-Day Forecast
+                                    </p>
+
+                                    <p className="mt-2 text-2xl font-bold text-blue-700">
+                                        {reorder.forecasted_demand.toFixed(1)}
+                                    </p>
+                                </div>
+
+                                <div className="rounded-lg bg-slate-50 p-4">
+                                    <p className="text-sm text-slate-500">
+                                        Safety Stock
+                                    </p>
+
+                                    <p className="mt-2 text-2xl font-bold text-slate-900">
+                                        {reorder.safety_stock.toFixed(1)}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="mt-5 rounded-lg border border-blue-200 bg-blue-50 p-5">
+                                <p className="text-sm font-semibold uppercase tracking-wide text-blue-700">
+                                    Recommended Reorder
+                                </p>
+
+                                <p className="mt-2 text-4xl font-bold text-blue-700">
+                                    {reorder.recommended_reorder}
+                                </p>
+
+                                <p className="mt-1 text-sm text-blue-600">
+                                    units recommended
+                                </p>
+                            </div>
+                        </div>
+                    )}
                     <div className="mt-6 overflow-hidden rounded-xl bg-white shadow-sm">
                         <div className="max-h-[500px] overflow-y-auto overflow-x-auto">
                             <table className="w-full text-left">
