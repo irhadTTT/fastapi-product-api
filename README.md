@@ -3,9 +3,9 @@
 
 A scalable inventory management REST API built with with FastAPI, PostgreSQL, SQLAlchemy, Alembic, Redis, Celery and Docker.
 
-StockFlow is a backend system designed with a clean layered architecture using Routers, Services and Repository patterns. It provides secure user authentication, role-based access control, product and category management, inventory tracking and stock movement history,caching and asynchronous background processing and ML-powered demand forecasting for 30 days in advance.
+StockFlow is a backend system designed with a clean layered architecture using Routers, Services and Repository patterns. It provides secure user authentication, role-based access control, product and category management, inventory tracking and stock movement history, caching and asynchronous background processing and ML-powered demand forecasting for 30 days in advance and ML smart reorder recommendations based on demand forecast.
 
-The API includes email verification, protected resources, advanced product search, filtering, sorting, pagination, image management and inventory reporting with database-level aggregations and 30 days demand prediction using a Random Forest Regressor.
+The API includes email verification, protected resources, advanced product search, filtering, sorting, pagination, image management and inventory reporting with database-level aggregations and 30 days demand prediction using a Random Forest Regressor and ML-based smart reorder recommendations.
 
 Built with production-oriented practices including centralized exception handling, structured logging, database migrations, automated testing, CI/CD, rate limiting, Prometheus metrics and Grafana monitoring.
 
@@ -145,7 +145,7 @@ The frontend is being developed as a separate application inside the `frontend/`
 
 StockFlow includes a **machine learning-based demand forecasting system** powered by a **Random Forest Regressor**.
 
-The system analyzes historical stock movement data and predicts the expected demand for a product **30 days in advance showing statistics day by day**.
+The system analyzes historical stock movement data and predicts the expected demand for a product **30 days in advance showing statistics day by day**, while also providing smart reorder recommendations based on forecasted demand, current stock levels, and safety stock requirements.
 
 ### How It Works
 
@@ -173,6 +173,8 @@ The forecast is exposed through a dedicated **FastAPI endpoint** and integrated 
 - **React + TypeScript** – frontend visualization
 
 <img width="1917" height="1026" alt="Screenshot 2026-08-31 125903" src="https://github.com/user-attachments/assets/08a697af-fab2-4df1-8895-56387c97a6fa" />
+
+<img width="1917" height="1021" alt="Screenshot 2026-09-01 123958" src="https://github.com/user-attachments/assets/f6e5d800-7f95-4063-9410-b339c32ff38e" />
 
 
 ### Authentication & Authorization
