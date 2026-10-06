@@ -20,13 +20,14 @@ from router import (
     inventory_report,
     product,
     refresh_token,
+    s3,
     stock_movement,
     user,
 )
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="StockFlow API project")
+app = FastAPI(title="StockFlow API project", root_path="/api")
 
 Instrumentator().instrument(app).expose(app)
 
@@ -58,7 +59,7 @@ app.include_router(stock_movement.router)
 app.include_router(refresh_token.router)
 app.include_router(inventory_report.router)
 app.include_router(forcast.router)
-
+app.include_router(s3.router)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
