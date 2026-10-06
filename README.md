@@ -1,19 +1,68 @@
 # StockFlow API 🚀 
 [![codecov](https://codecov.io/gh/irhadTTT/fastapi-product-api/graph/badge.svg)](https://codecov.io/gh/irhadTTT/fastapi-product-api)
 
-A scalable inventory management REST API built with with FastAPI, PostgreSQL, SQLAlchemy, Alembic, Redis, Celery and Docker.
+A scalable inventory management REST API built with FastAPI, PostgreSQL, SQLAlchemy, Redis, Celery and Docker.
 
-StockFlow is a backend system designed with a clean layered architecture using Routers, Services and Repository patterns. It provides secure user authentication, role-based access control, product and category management, inventory tracking and stock movement history, caching and asynchronous background processing and ML-powered demand forecasting for 30 days in advance and ML smart reorder recommendations based on demand forecast.
+StockFlow provides authentication, role-based access control, product and inventory management, caching, background processing, ML-powered demand forecasting and smart reorder recommendations.
 
-The API includes email verification, protected resources, advanced product search, filtering, sorting, pagination, image management and inventory reporting with database-level aggregations and 30 days demand prediction using a Random Forest Regressor and ML-based smart reorder recommendations.
+Built with production-oriented practices including layered architecture, database migrations, automated testing, CI/CD, rate limiting, Prometheus/Grafana monitoring and structured logging.
 
-Built with production-oriented practices including centralized exception handling, structured logging, database migrations, automated testing, CI/CD, rate limiting, Prometheus metrics and Grafana monitoring.
+☁️ AWS Deployment: Application Load Balancer, 2× EC2 instances across Availability Zones, RDS PostgreSQL, S3, IAM and CloudWatch monitoring.
 
-The application is containerized with Docker and deployed to production using Render, Neon PostgreSQL and Upstash Redis.
+🌐 Also deployed with: Render, Neon PostgreSQL and Upstash Redis.
 
-A React + TypeScript frontend is currently being developed to provide a web-based interface for authentication, dashboard management and inventory operations. The frontend currently includes login/logout functionality, dashboard navigation, product management and a reusable application layout with header and sidebar components.
+A React + TypeScript frontend is currently being developed for authentication, dashboards, product management and inventory operations.
 
 ---
+## ☁️ AWS Cloud Deployment
+
+StockFlow is also deployed on **AWS** using a production-oriented cloud architecture.
+
+```text
+                         Internet
+                            │
+                            ▼
+                  ┌──────────────────┐
+                  │ Application Load │
+                  │     Balancer     │
+                  └────────┬─────────┘
+                           │
+                 ┌─────────┴─────────┐
+                 ▼                   ▼
+          ┌─────────────┐     ┌─────────────┐
+          │   EC2 #1    │     │   EC2 #2    │
+          │ Nginx + API │     │ Nginx + API │
+          └──────┬──────┘     └──────┬──────┘
+                 │                   │
+                 └─────────┬─────────┘
+                           ▼
+                  ┌─────────────────┐
+                  │ RDS PostgreSQL  │
+                  └─────────────────┘
+
+             ┌────────────┐    ┌──────────────┐
+             │     S3     │    │  CloudWatch  │
+             │ File Store │    │ Monitoring   │
+             └────────────┘    └──────────────┘
+```
+
+### AWS Infrastructure
+
+* **Application Load Balancer** – traffic distribution and health checks
+* **2× EC2** – FastAPI + Nginx across two Availability Zones
+* **Amazon RDS PostgreSQL** – managed private database
+* **Amazon S3** – private file storage
+* **IAM Role** – least-privilege S3 access without hard-coded credentials
+* **CloudWatch** – infrastructure metrics, dashboard and CPU alarm
+* **Failover tested** – application remained available after stopping one EC2 instance
+
+### AWS Deployment
+
+**Swagger UI:**
+http://stockflow-alb-1132519511.eu-north-1.elb.amazonaws.com/api/docs
+
+**ALB:**
+http://stockflow-alb-1132519511.eu-north-1.elb.amazonaws.com
 
 🌐 Live Deployment
 Production API
