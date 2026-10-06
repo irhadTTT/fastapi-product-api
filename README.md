@@ -7,7 +7,7 @@ StockFlow provides authentication, role-based access control, product and invent
 
 Built with production-oriented practices including layered architecture, database migrations, automated testing, CI/CD, rate limiting, Prometheus/Grafana monitoring and structured logging.
 
-☁️ AWS Deployment: Application Load Balancer, 2× EC2 instances across Availability Zones, RDS PostgreSQL, S3, IAM and CloudWatch monitoring.
+☁️ AWS Deployment: Application Load Balancer, 2× EC2 instances across Availability Zones, RDS PostgreSQL, S3, IAM and CloudWatch monitoring, with automatic FastAPI startup and tested instance failover.
 
 🌐 Also deployed with: Render, Neon PostgreSQL and Upstash Redis.
 
@@ -63,6 +63,15 @@ http://stockflow-alb-1132519511.eu-north-1.elb.amazonaws.com/api/docs
 
 **ALB:**
 http://stockflow-alb-1132519511.eu-north-1.elb.amazonaws.com
+
+### 2x EC2 Infrastructure
+<img width="1916" height="1025" alt="Screenshot 2026-10-06 221123" src="https://github.com/user-attachments/assets/38737141-b169-4a54-a281-8a3198869067" />
+
+
+### AWS CloudWatch Dashboard
+<img width="1907" height="1027" alt="Screenshot 2026-10-06 235906" src="https://github.com/user-attachments/assets/ea503e52-38c8-4353-a790-af0e39ae1156" />
+
+<img width="1917" height="1030" alt="Screenshot 2026-10-06 235935" src="https://github.com/user-attachments/assets/08270bfb-ab3a-4bee-a6f1-e407f8d47843" />
 
 🌐 Live Deployment
 Production API
