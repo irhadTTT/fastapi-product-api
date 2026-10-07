@@ -52,6 +52,19 @@ async def export_inventory_report_excel(
 ):
     output = await InventoryReportService.export_inventory_report_excel(db)
 
+    filename = (
+        f"inventory_report_"
+        f"{datetime.now(timezone.utc).strftime('%d.%m.%Y_%H-%M-%S')}.xlsx"
+    )
+
+    upload_file(
+        output.getvalue(),
+        f"exports/{filename}",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+
+    output.seek(0)
+
     return StreamingResponse(
         output,
         media_type=(
@@ -59,8 +72,7 @@ async def export_inventory_report_excel(
         ),
         headers={
             "Content-Disposition": (
-                "attachment; filename=inventory_report_"
-                f"{datetime.now(timezone.utc).strftime('%d.%m.%Y_%H-%M-%S')}.xlsx"
+                f"attachment; filename={filename}"
             )
         },
     )
