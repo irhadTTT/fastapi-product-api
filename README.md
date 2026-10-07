@@ -64,6 +64,16 @@ http://stockflow-alb-1132519511.eu-north-1.elb.amazonaws.com/api/docs
 **ALB:**
 http://stockflow-alb-1132519511.eu-north-1.elb.amazonaws.com
 
+### Demo Admin Account
+
+You can use the following demo account to explore the application:
+
+* **Username:** `admin`
+* **Password:** `admin`
+
+The demo account has administrator privileges and provides access to user management and other admin features.
+
+
 ### 2x EC2 Infrastructure
 <img width="1916" height="1025" alt="Screenshot 2026-10-06 221123" src="https://github.com/user-attachments/assets/38737141-b169-4a54-a281-8a3198869067" />
 
