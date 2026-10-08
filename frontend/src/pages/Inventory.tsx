@@ -83,7 +83,7 @@ export default function Inventory() {
       setIsCreating(true);
       setError(null);
 
-      const idempotencyKey = crypto.randomUUID();
+      const idempotencyKey = crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).substring(2)}`;
 
       const newMovement = await createStockMovement({
         product_id: Number(productId),
