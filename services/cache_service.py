@@ -16,7 +16,7 @@ async def get_cache(key: str):
 
         return json.loads(data)
 
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         logger.warning("Cache read failed; continuing without cache: %s", exc)
         return None
 
@@ -33,7 +33,7 @@ async def set_cache(key: str, data, expire: int = 300):
 
         await redis_client.set(key, json.dumps(data), ex=expire)
 
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         logger.warning("Cache write failed; continuing without cache: %s", exc)
 
     finally:
@@ -49,7 +49,7 @@ async def delete_cache_pattern(pattern: str):
         if keys:
             await redis_client.delete(*keys)
 
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         logger.warning("Cache invalidation failed: %s", exc)
 
     finally:
